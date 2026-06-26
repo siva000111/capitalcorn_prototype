@@ -5,14 +5,20 @@ import ConfirmButton from './ConfirmButton';
 interface SidebarProps {
   active: Section;
   onSelect: (section: Section) => void;
+  onOpenSearch: () => void;
 }
 
-export default function Sidebar({ active, onSelect }: SidebarProps) {
+export default function Sidebar({ active, onSelect, onOpenSearch }: SidebarProps) {
   const resetToSeed = useAppStore((s) => s.resetToSeed);
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-wordmark">CAPITALCORN</div>
+      <div className="sidebar-top">
+        <div className="sidebar-wordmark">CAPITALCORN</div>
+        <button type="button" className="sidebar-search-btn" onClick={onOpenSearch} aria-label="Search (Ctrl+K)">
+          ⌘K
+        </button>
+      </div>
       <div className="sidebar-rule" />
       <nav className="sidebar-nav">
         {SECTIONS.map((section) => (

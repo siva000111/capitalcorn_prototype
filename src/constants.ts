@@ -38,6 +38,22 @@ export const PAIR_STATUSES: PairStatus[] = [
 
 export const NOT_YET_CONTACTED = 'Not yet contacted';
 
+const NEGATIVE_STATUSES: PairStatus[] = ['Pass', 'Pass after meeting done', 'Pass after 2nd meeting'];
+const NEUTRAL_STATUSES: PairStatus[] = ['Reached out – evaluating'];
+
+export type StatusTone = 'neutral' | 'positive' | 'negative';
+
+export function getStatusTone(status: PairStatus | null): StatusTone {
+  if (status === null) return 'neutral';
+  if (NEUTRAL_STATUSES.includes(status)) return 'neutral';
+  if (NEGATIVE_STATUSES.includes(status)) return 'negative';
+  return 'positive';
+}
+
+export function isActivePairStatus(status: PairStatus | null): boolean {
+  return status === null || !NEGATIVE_STATUSES.includes(status);
+}
+
 export const SECTIONS = [
   'Home',
   'Investor library',

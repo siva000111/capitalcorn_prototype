@@ -1,13 +1,38 @@
+import { useEffect, useRef, useState } from 'react';
 import type { Startup } from '../types';
 import { useAppStore } from '../store';
 import { SECTOR_TAGS, STAGES, LOCATION_TAGS } from '../constants';
 import ConfirmButton from './ConfirmButton';
+import InlineEditText from './InlineEditText';
+import InlineEditSelect from './InlineEditSelect';
+import EmptyState from './EmptyState';
 
-export default function StartupLibrary() {
+const SECTOR_OPTIONS = SECTOR_TAGS.map((tag) => ({ value: tag, label: tag }));
+const STAGE_OPTIONS = STAGES.map((stage) => ({ value: stage, label: stage }));
+const LOCATION_OPTIONS = LOCATION_TAGS.map((loc) => ({ value: loc, label: loc }));
+
+interface StartupLibraryProps {
+  jumpStartupId?: string | null;
+  onJumpHandled?: () => void;
+}
+
+export default function StartupLibrary({ jumpStartupId, onJumpHandled }: StartupLibraryProps) {
   const startups = useAppStore((s) => s.startups);
   const updateStartup = useAppStore((s) => s.updateStartup);
   const addStartup = useAppStore((s) => s.addStartup);
   const deleteStartup = useAppStore((s) => s.deleteStartup);
+
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const rowRefs = useRef(new Map<string, HTMLTableRowElement>());
+
+  useEffect(() => {
+    if (!jumpStartupId) return;
+    rowRefs.current.get(jumpStartupId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHighlightId(jumpStartupId);
+    onJumpHandled?.();
+    const timer = setTimeout(() => setHighlightId(null), 2000);
+    return () => clearTimeout(timer);
+  }, [jumpStartupId, onJumpHandled]);
 
   function patch(id: string, p: Partial<Startup>) {
     updateStartup(id, p);
@@ -25,85 +50,77 @@ export default function StartupLibrary() {
         </button>
       </div>
 
-      <div className="table-wrap">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Sector</th>
-              <th>Stage</th>
-              <th>Raise ($M)</th>
-              <th>Location</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {startups.map((s) => (
-              <tr key={s.id}>
-                <td>
-                  <input
-                    className="input"
-                    value={s.name}
-                    onChange={(e) => patch(s.id, { name: e.target.value })}
-                    aria-label="Startup name"
-                  />
-                </td>
-                <td>
-                  <select
-                    className="select"
-                    value={s.sector}
-                    onChange={(e) => patch(s.id, { sector: e.target.value as Startup['sector'] })}
-                  >
-                    {SECTOR_TAGS.map((tag) => (
-                      <option key={tag} value={tag}>
-                        {tag}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <select
-                    className="select"
-                    value={s.stage}
-                    onChange={(e) => patch(s.id, { stage: e.target.value as Startup['stage'] })}
-                  >
-                    {STAGES.map((stage) => (
-                      <option key={stage} value={stage}>
-                        {stage}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <input
-                    className="input"
-                    type="number"
-                    value={s.raise}
-                    onChange={(e) => patch(s.id, { raise: e.target.value === '' ? 0 : Number(e.target.value) })}
-                    aria-label="Raise in millions USD"
-                  />
-                </td>
-                <td>
-                  <select
-                    className="select"
-                    value={s.location}
-                    onChange={(e) => patch(s.id, { location: e.target.value as Startup['location'] })}
-                  >
-                    {LOCATION_TAGS.map((loc) => (
-                      <option key={loc} value={loc}>
-                        {loc}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <ConfirmButton label="Delete" confirmLabel="Confirm delete" onConfirm={() => deleteStartup(s.id)} />
-                </td>
+      {startups.length === 0 ? (
+        <EmptyState message="No startups yet." action={{ label: '+ Add startup', onClick: addStartup }} />
+      ) : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Sector</th>
+                <th>Stage</th>
+                <th className="cell-numeric">Raise ($M)</th>
+                <th>Location</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {startups.map((s) => (
+                <tr
+                  key={s.id}
+                  ref={(el) => {
+                    if (el) rowRefs.current.set(s.id, el);
+                    else rowRefs.current.delete(s.id);
+                  }}
+                  className={highlightId === s.id ? 'row-highlight' : undefined}
+                >
+                  <td>
+                    <InlineEditText value={s.name} onSave={(v) => patch(s.id, { name: v })} ariaLabel="startup name" />
+                  </td>
+                  <td>
+                    <InlineEditSelect
+                      value={s.sector}
+                      options={SECTOR_OPTIONS}
+                      onSave={(v) => patch(s.id, { sector: v as Startup['sector'] })}
+                      ariaLabel="sector"
+                    />
+                  </td>
+                  <td>
+                    <InlineEditSelect
+                      value={s.stage}
+                      options={STAGE_OPTIONS}
+                      onSave={(v) => patch(s.id, { stage: v as Startup['stage'] })}
+                      ariaLabel="stage"
+                    />
+                  </td>
+                  <td className="cell-numeric">
+                    <InlineEditText
+                      type="number"
+                      value={String(s.raise)}
+                      onSave={(v) => patch(s.id, { raise: v === '' ? 0 : Number(v) })}
+                      ariaLabel="raise in millions USD"
+                    />
+                  </td>
+                  <td>
+                    <InlineEditSelect
+                      value={s.location}
+                      options={LOCATION_OPTIONS}
+                      onSave={(v) => patch(s.id, { location: v as Startup['location'] })}
+                      ariaLabel="location"
+                    />
+                  </td>
+                  <td>
+                    <span className="row-actions">
+                      <ConfirmButton label="Delete" confirmLabel="Confirm delete" onConfirm={() => deleteStartup(s.id)} />
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 }

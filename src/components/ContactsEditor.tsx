@@ -1,4 +1,5 @@
 import type { Contact } from '../types';
+import InlineEditText from './InlineEditText';
 
 interface ContactsEditorProps {
   contacts: Contact[];
@@ -23,30 +24,35 @@ export default function ContactsEditor({ contacts, onChange }: ContactsEditorPro
 
   return (
     <details className="contacts-toggle">
-      <summary>Contacts ({contacts.length}/{MAX_CONTACTS})</summary>
+      <summary>
+        Contacts ({contacts.length}/{MAX_CONTACTS})
+      </summary>
       <div className="contacts-editor">
         {contacts.map((c, i) => (
-          <div className="contact-row" key={i}>
-            <input
-              className="input"
-              placeholder={`Name ${i + 1}`}
+          <div className="contact-row card-actions-host" key={i}>
+            <InlineEditText
               value={c.name ?? ''}
-              onChange={(e) => updateContact(i, { name: e.target.value === '' ? null : e.target.value })}
+              placeholder={`Name ${i + 1}`}
+              onSave={(v) => updateContact(i, { name: v === '' ? null : v })}
+              ariaLabel={`name ${i + 1}`}
             />
-            <input
-              className="input"
-              placeholder={`Email ${i + 1}`}
+            <InlineEditText
+              type="email"
               value={c.email ?? ''}
-              onChange={(e) => updateContact(i, { email: e.target.value === '' ? null : e.target.value })}
+              placeholder={`Email ${i + 1}`}
+              onSave={(v) => updateContact(i, { email: v === '' ? null : v })}
+              ariaLabel={`email ${i + 1}`}
             />
-            <button
-              type="button"
-              className="btn btn-sm btn-icon btn-danger"
-              onClick={() => removeContact(i)}
-              aria-label={`Remove contact ${i + 1}`}
-            >
-              ×
-            </button>
+            <span className="row-actions">
+              <button
+                type="button"
+                className="btn btn-sm btn-icon btn-danger"
+                onClick={() => removeContact(i)}
+                aria-label={`Remove contact ${i + 1}`}
+              >
+                ×
+              </button>
+            </span>
           </div>
         ))}
         {contacts.length < MAX_CONTACTS && (

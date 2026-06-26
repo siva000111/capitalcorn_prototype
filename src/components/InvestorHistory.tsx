@@ -1,20 +1,44 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAppStore } from '../store';
 import { PAIR_STATUSES, NOT_YET_CONTACTED } from '../constants';
 import type { PairStatus } from '../types';
+import StatusPill from './StatusPill';
+import InlineEditSelect from './InlineEditSelect';
+import InlineEditText from './InlineEditText';
+import ConfirmButton from './ConfirmButton';
+import EmptyState from './EmptyState';
+import { showToast } from '../toast';
+
+const STATUS_OPTIONS = [
+  { value: '', label: `— ${NOT_YET_CONTACTED} —` },
+  ...PAIR_STATUSES.map((s) => ({ value: s, label: s })),
+];
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-export default function InvestorHistory() {
+interface InvestorHistoryProps {
+  jumpFundId?: string | null;
+  onJumpHandled?: () => void;
+}
+
+export default function InvestorHistory({ jumpFundId, onJumpHandled }: InvestorHistoryProps) {
   const funds = useAppStore((s) => s.funds);
   const startups = useAppStore((s) => s.startups);
   const pairs = useAppStore((s) => s.pairs);
   const updatePair = useAppStore((s) => s.updatePair);
+  const deletePair = useAppStore((s) => s.deletePair);
 
   const [search, setSearch] = useState('');
   const [selectedFundId, setSelectedFundId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (jumpFundId) {
+      setSelectedFundId(jumpFundId);
+      onJumpHandled?.();
+    }
+  }, [jumpFundId, onJumpHandled]);
 
   const filteredFunds = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -34,6 +58,11 @@ export default function InvestorHistory() {
       )
       .sort((a, b) => new Date(b.pair.matchedAt).getTime() - new Date(a.pair.matchedAt).getTime());
   }, [selectedFund, pairs, startups]);
+
+  function handleUnmatch(pairId: string) {
+    deletePair(pairId);
+    showToast('Match removed');
+  }
 
   return (
     <>
@@ -70,7 +99,7 @@ export default function InvestorHistory() {
 
         <div className="history-main">
           {!selectedFund ? (
-            <div className="placeholder-card">Select a fund to see its history.</div>
+            <EmptyState message="Select a fund to see its history." />
           ) : (
             <>
               <div className="history-header">
@@ -86,45 +115,42 @@ export default function InvestorHistory() {
               </div>
 
               {timeline.length === 0 ? (
-                <div className="placeholder-card">No startups matched with this fund yet.</div>
+                <EmptyState message="No startups matched with this fund yet." />
               ) : (
                 timeline.map(({ pair, startup }) => (
-                  <div className="timeline-entry" key={pair.id}>
+                  <div className="timeline-entry card-actions-host" key={pair.id}>
                     <div className="timeline-entry-header">
                       <span className="timeline-startup-name">{startup.name}</span>
                       <span className="timeline-date">Matched {formatDate(pair.matchedAt)}</span>
+                      <span className="row-actions">
+                        <ConfirmButton
+                          label="Unmatch"
+                          prompt="Remove this match? This cannot be undone."
+                          confirmLabel="Remove"
+                          onConfirm={() => handleUnmatch(pair.id)}
+                        />
+                      </span>
                     </div>
                     <div className="timeline-fields">
                       <div className="field">
-                        <label htmlFor={`status-${pair.id}`}>Status</label>
-                        <select
-                          id={`status-${pair.id}`}
-                          className="select"
+                        <label>Status</label>
+                        <InlineEditSelect
                           value={pair.status ?? ''}
-                          onChange={(e) =>
-                            updatePair(pair.id, {
-                              status: e.target.value === '' ? null : (e.target.value as PairStatus),
-                            })
+                          options={STATUS_OPTIONS}
+                          renderDisplay={(v) => <StatusPill status={(v || null) as PairStatus | null} />}
+                          onSave={(v) =>
+                            updatePair(pair.id, { status: v === '' ? null : (v as PairStatus) })
                           }
-                        >
-                          <option value="">— {NOT_YET_CONTACTED} —</option>
-                          {PAIR_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </select>
+                          ariaLabel="status"
+                        />
                       </div>
                       <div className="field">
-                        <label htmlFor={`followup-${pair.id}`}>Follow-up date</label>
-                        <input
-                          id={`followup-${pair.id}`}
-                          className="input"
+                        <label>Follow-up date</label>
+                        <InlineEditText
                           type="date"
                           value={pair.followUpDate ?? ''}
-                          onChange={(e) =>
-                            updatePair(pair.id, { followUpDate: e.target.value === '' ? null : e.target.value })
-                          }
+                          onSave={(v) => updatePair(pair.id, { followUpDate: v === '' ? null : v })}
+                          ariaLabel="follow-up date"
                         />
                       </div>
                     </div>

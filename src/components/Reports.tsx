@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { useAppStore } from '../store';
 import { PAIR_STATUSES, NOT_YET_CONTACTED } from '../constants';
 import StartupPicker from './StartupPicker';
+import StatusPill from './StatusPill';
+import EmptyState from './EmptyState';
 
 export default function Reports() {
   const startups = useAppStore((s) => s.startups);
@@ -57,7 +59,7 @@ export default function Reports() {
           </div>
 
           {startupPairs.length === 0 ? (
-            <div className="placeholder-card">No funds matched with this startup yet.</div>
+            <EmptyState message="No funds matched with this startup yet." />
           ) : (
             <div className="table-wrap">
               <table className="data-table">
@@ -74,7 +76,9 @@ export default function Reports() {
                     return (
                       <tr key={p.id}>
                         <td>{fund?.fundName ?? '(deleted fund)'}</td>
-                        <td>{p.status ?? NOT_YET_CONTACTED}</td>
+                        <td>
+                          <StatusPill status={p.status} />
+                        </td>
                         <td>{p.followUpDate ?? '—'}</td>
                       </tr>
                     );

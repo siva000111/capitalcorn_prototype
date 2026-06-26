@@ -4,10 +4,15 @@ import { SECTOR_TAGS, STAGES, LOCATION_TAGS, PRIORITIES, INVESTOR_TYPES } from '
 import MultiSelect from './MultiSelect';
 import ContactsEditor from './ContactsEditor';
 import ConfirmButton from './ConfirmButton';
+import InlineEditText from './InlineEditText';
+import InlineEditSelect from './InlineEditSelect';
 
 interface FundCardProps {
   fund: Fund;
 }
+
+const PRIORITY_OPTIONS = [{ value: '', label: '—' }, ...PRIORITIES.map((p) => ({ value: p, label: p }))];
+const INVESTOR_TYPE_OPTIONS = [{ value: '', label: '—' }, ...INVESTOR_TYPES.map((t) => ({ value: t, label: t }))];
 
 export default function FundCard({ fund }: FundCardProps) {
   const updateFund = useAppStore((s) => s.updateFund);
@@ -18,85 +23,62 @@ export default function FundCard({ fund }: FundCardProps) {
   }
 
   return (
-    <div className="fund-card">
+    <div className="fund-card card-actions-host">
       <div className="fund-card-header">
         <div>
-          <input
-            className="fund-name-input"
+          <InlineEditText
+            variant="title"
             value={fund.fundName}
-            onChange={(e) => patch({ fundName: e.target.value })}
-            aria-label="Fund name"
+            onSave={(v) => patch({ fundName: v })}
+            ariaLabel="fund name"
           />
           <span className="fund-id-tag">{fund.id}</span>
         </div>
-        <ConfirmButton label="Delete" confirmLabel="Confirm delete" onConfirm={() => deleteFund(fund.id)} />
+        <span className="row-actions">
+          <ConfirmButton label="Delete" confirmLabel="Confirm delete" onConfirm={() => deleteFund(fund.id)} />
+        </span>
       </div>
 
       <div className="field-grid">
         <div className="field">
-          <label htmlFor={`${fund.id}-city`}>City</label>
-          <input
-            id={`${fund.id}-city`}
-            className="input"
-            value={fund.city}
-            onChange={(e) => patch({ city: e.target.value })}
-          />
+          <label>City</label>
+          <InlineEditText value={fund.city} onSave={(v) => patch({ city: v })} ariaLabel="city" />
         </div>
         <div className="field">
-          <label htmlFor={`${fund.id}-min`}>Min ticket ($M)</label>
-          <input
-            id={`${fund.id}-min`}
-            className="input"
+          <label>Min ticket ($M)</label>
+          <InlineEditText
             type="number"
-            value={fund.minTicket ?? ''}
-            onChange={(e) => patch({ minTicket: e.target.value === '' ? null : Number(e.target.value) })}
+            value={fund.minTicket === null ? '' : String(fund.minTicket)}
+            onSave={(v) => patch({ minTicket: v === '' ? null : Number(v) })}
+            ariaLabel="minimum ticket"
           />
         </div>
         <div className="field">
-          <label htmlFor={`${fund.id}-max`}>Max ticket ($M)</label>
-          <input
-            id={`${fund.id}-max`}
-            className="input"
+          <label>Max ticket ($M)</label>
+          <InlineEditText
             type="number"
-            value={fund.maxTicket ?? ''}
-            onChange={(e) => patch({ maxTicket: e.target.value === '' ? null : Number(e.target.value) })}
+            value={fund.maxTicket === null ? '' : String(fund.maxTicket)}
+            onSave={(v) => patch({ maxTicket: v === '' ? null : Number(v) })}
+            ariaLabel="maximum ticket"
           />
         </div>
         <div className="field">
-          <label htmlFor={`${fund.id}-priority`}>Priority</label>
-          <select
-            id={`${fund.id}-priority`}
-            className="select"
+          <label>Priority</label>
+          <InlineEditSelect
             value={fund.priority ?? ''}
-            onChange={(e) =>
-              patch({ priority: e.target.value === '' ? null : (e.target.value as Fund['priority']) })
-            }
-          >
-            <option value="">—</option>
-            {PRIORITIES.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
+            options={PRIORITY_OPTIONS}
+            onSave={(v) => patch({ priority: v === '' ? null : (v as Fund['priority']) })}
+            ariaLabel="priority"
+          />
         </div>
         <div className="field">
-          <label htmlFor={`${fund.id}-type`}>Investor type</label>
-          <select
-            id={`${fund.id}-type`}
-            className="select"
+          <label>Investor type</label>
+          <InlineEditSelect
             value={fund.investorType ?? ''}
-            onChange={(e) =>
-              patch({ investorType: e.target.value === '' ? null : (e.target.value as Fund['investorType']) })
-            }
-          >
-            <option value="">—</option>
-            {INVESTOR_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+            options={INVESTOR_TYPE_OPTIONS}
+            onSave={(v) => patch({ investorType: v === '' ? null : (v as Fund['investorType']) })}
+            ariaLabel="investor type"
+          />
         </div>
       </div>
 

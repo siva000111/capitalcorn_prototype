@@ -4,6 +4,8 @@ import { SECTOR_TAGS, STAGES, LOCATION_TAGS } from '../constants';
 import { getEligibleFunds } from '../matching';
 import type { SectorTag, Stage, LocationTag, Fund } from '../types';
 import StartupPicker from './StartupPicker';
+import EmptyState from './EmptyState';
+import { showToast } from '../toast';
 
 export default function MatchTab() {
   const startups = useAppStore((s) => s.startups);
@@ -57,6 +59,7 @@ export default function MatchTab() {
     const matchedFunds = funds.filter((f) => fundIds.includes(f.id));
     setMatchedThisSession((prev) => [...prev, ...matchedFunds]);
     setChecked(new Set());
+    showToast(`Matched ${fundIds.length} fund${fundIds.length === 1 ? '' : 's'} to ${startup.name}`);
   }
 
   return (
@@ -134,7 +137,9 @@ export default function MatchTab() {
           <section className="match-step">
             <h2 className="step-title">4. Candidates</h2>
             {selectedSectors.length === 0 ? (
-              <div className="placeholder-card">Select at least one sector to see candidates.</div>
+              <EmptyState message="Select at least one sector to see candidates." />
+            ) : eligible.length === 0 ? (
+              <EmptyState message="No matching funds for these filters." />
             ) : (
               <>
                 <p className="result-count">
@@ -174,13 +179,6 @@ export default function MatchTab() {
                           </td>
                         </tr>
                       ))}
-                      {eligible.length === 0 && (
-                        <tr>
-                          <td colSpan={4} className="muted">
-                            No funds match these filters.
-                          </td>
-                        </tr>
-                      )}
                     </tbody>
                   </table>
                 </div>

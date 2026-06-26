@@ -3,6 +3,7 @@ import { useState } from 'react';
 interface ConfirmButtonProps {
   label: string;
   confirmLabel?: string;
+  prompt?: string;
   className?: string;
   onConfirm: () => void;
 }
@@ -10,6 +11,7 @@ interface ConfirmButtonProps {
 export default function ConfirmButton({
   label,
   confirmLabel = 'Confirm?',
+  prompt,
   className = 'btn btn-sm btn-danger',
   onConfirm,
 }: ConfirmButtonProps) {
@@ -18,6 +20,7 @@ export default function ConfirmButton({
   if (confirming) {
     return (
       <span className="confirm-group">
+        {prompt && <span className="confirm-prompt">{prompt}</span>}
         <button
           type="button"
           className={className}

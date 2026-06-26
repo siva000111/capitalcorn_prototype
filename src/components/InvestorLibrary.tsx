@@ -3,6 +3,7 @@ import { useAppStore } from '../store';
 import { SECTOR_TAGS, STAGES, LOCATION_TAGS, PRIORITIES, INVESTOR_TYPES } from '../constants';
 import type { SectorTag, Stage, LocationTag } from '../types';
 import FundCard from './FundCard';
+import EmptyState from './EmptyState';
 
 export default function InvestorLibrary() {
   const funds = useAppStore((s) => s.funds);
@@ -178,10 +179,11 @@ export default function InvestorLibrary() {
         Showing {filtered.length} of {funds.length} funds
       </p>
 
-      {filtered.map((fund) => (
-        <FundCard key={fund.id} fund={fund} />
-      ))}
-      {filtered.length === 0 && <div className="placeholder-card">No funds match the current filters.</div>}
+      {filtered.length === 0 ? (
+        <EmptyState message="No funds match the current filters." action={{ label: 'Clear filters', onClick: clearFilters }} />
+      ) : (
+        filtered.map((fund) => <FundCard key={fund.id} fund={fund} />)
+      )}
     </>
   );
 }

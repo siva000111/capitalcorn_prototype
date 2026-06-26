@@ -55,6 +55,7 @@ interface AppStore extends AppData {
   createPairs: (startupId: string, fundIds: string[]) => void;
   updateContactName: (fundId: string, contactIndex: number, name: string | null) => void;
   updatePair: (pairId: string, fields: Partial<Pair>) => void;
+  deletePair: (pairId: string) => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -106,6 +107,8 @@ export const useAppStore = create<AppStore>()(
         set((state) => ({
           pairs: state.pairs.map((p) => (p.id === pairId ? { ...p, ...fields } : p)),
         })),
+      deletePair: (pairId) =>
+        set((state) => ({ pairs: state.pairs.filter((p) => p.id !== pairId) })),
     }),
     {
       name: 'capitalcorn_state_v1',
