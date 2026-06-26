@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AppData, Fund, Startup, Pair } from './types';
+import type { AppData, Fund, Startup, Pair, StatusDef, StatusColor, CommEvent, CommEventType } from './types';
 import { seed } from './seed';
+
+const COLOR_CYCLE: StatusColor[] = ['slate', 'blue', 'indigo', 'violet', 'amber', 'emerald', 'rose'];
 
 function nextIds(prefix: string, items: { id: string }[], count: number): string[] {
   const pattern = new RegExp(`^${prefix}-(\\d+)$`);
@@ -44,6 +46,17 @@ function blankStartup(existing: Startup[]): Startup {
   };
 }
 
+function blankStatus(existing: StatusDef[], label?: string): StatusDef {
+  const nextOrder = (existing.length ? Math.max(...existing.map((s) => s.order)) : 0) + 1;
+  return {
+    id: nextId('status', existing),
+    label: label?.trim() || 'New status',
+    order: nextOrder,
+    closed: false,
+    color: COLOR_CYCLE[existing.length % COLOR_CYCLE.length],
+  };
+}
+
 interface AppStore extends AppData {
   resetToSeed: () => void;
   updateFund: (id: string, patch: Partial<Fund>) => void;
@@ -52,15 +65,25 @@ interface AppStore extends AppData {
   updateStartup: (id: string, patch: Partial<Startup>) => void;
   addStartup: () => void;
   deleteStartup: (id: string) => void;
-  createPairs: (startupId: string, fundIds: string[]) => void;
+  createPairs: (startupId: string, fundIds: string[]) => Pair[];
   updateContactName: (fundId: string, contactIndex: number, name: string | null) => void;
   updatePair: (pairId: string, fields: Partial<Pair>) => void;
   deletePair: (pairId: string) => void;
+  updateStatus: (id: string, patch: Partial<StatusDef>) => void;
+  addStatus: (label?: string) => StatusDef;
+  deleteStatus: (id: string) => void;
+  reorderStatuses: (orderedIds: string[]) => void;
+  countPairsUsingStatus: (statusId: string) => number;
+  addCommEvent: (pairId: string, type: CommEventType, date: string, subject?: string, body?: string) => void;
+  getEventsForPair: (pairId: string) => CommEvent[];
+  countReplies: (pairId: string, sinceDate?: string) => number;
+  countMeetingsScheduled: (pairId: string, sinceDate?: string) => number;
+  countMeetingsCompleted: (pairId: string, sinceDate?: string) => number;
 }
 
 export const useAppStore = create<AppStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...seed,
       resetToSeed: () => set({ ...seed }),
       updateFund: (id, patch) =>
@@ -79,22 +102,22 @@ export const useAppStore = create<AppStore>()(
         set((state) => ({ startups: [...state.startups, blankStartup(state.startups)] })),
       deleteStartup: (id) =>
         set((state) => ({ startups: state.startups.filter((s) => s.id !== id) })),
-      createPairs: (startupId, fundIds) =>
-        set((state) => {
-          const ids = nextIds('pair', state.pairs, fundIds.length);
-          const matchedAt = new Date().toISOString();
-          const newPairs: Pair[] = fundIds.map((fundId, i) => ({
-            id: ids[i],
-            startupId,
-            fundId,
-            status: null,
-            description: '',
-            mailLink: '',
-            followUpDate: null,
-            matchedAt,
-          }));
-          return { pairs: [...state.pairs, ...newPairs] };
-        }),
+      createPairs: (startupId, fundIds) => {
+        const ids = nextIds('pair', get().pairs, fundIds.length);
+        const matchedAt = new Date().toISOString();
+        const newPairs: Pair[] = fundIds.map((fundId, i) => ({
+          id: ids[i],
+          startupId,
+          fundId,
+          status: null,
+          description: '',
+          mailLink: '',
+          followUpDate: null,
+          matchedAt,
+        }));
+        set((state) => ({ pairs: [...state.pairs, ...newPairs] }));
+        return newPairs;
+      },
       updateContactName: (fundId, contactIndex, name) =>
         set((state) => ({
           funds: state.funds.map((f) =>
@@ -109,6 +132,46 @@ export const useAppStore = create<AppStore>()(
         })),
       deletePair: (pairId) =>
         set((state) => ({ pairs: state.pairs.filter((p) => p.id !== pairId) })),
+      updateStatus: (id, patch) =>
+        set((state) => ({
+          statuses: state.statuses.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+        })),
+      addStatus: (label) => {
+        const status = blankStatus(get().statuses, label);
+        set((state) => ({ statuses: [...state.statuses, status] }));
+        return status;
+      },
+      deleteStatus: (id) =>
+        set((state) => {
+          const inUse = state.pairs.some((p) => p.status === id);
+          if (inUse) return {};
+          return { statuses: state.statuses.filter((s) => s.id !== id) };
+        }),
+      reorderStatuses: (orderedIds) =>
+        set((state) => ({
+          statuses: orderedIds.map((id, i) => {
+            const existing = state.statuses.find((s) => s.id === id)!;
+            return { ...existing, order: i + 1 };
+          }),
+        })),
+      countPairsUsingStatus: (statusId) => get().pairs.filter((p) => p.status === statusId).length,
+      addCommEvent: (pairId, type, date, subject, body) =>
+        set((state) => ({
+          events: [...state.events, { id: nextId('event', state.events), pairId, type, date, subject, body }],
+        })),
+      getEventsForPair: (pairId) => get().events.filter((e) => e.pairId === pairId),
+      countReplies: (pairId, sinceDate) =>
+        get().events.filter(
+          (e) => e.pairId === pairId && e.type === 'reply_received' && (!sinceDate || e.date >= sinceDate)
+        ).length,
+      countMeetingsScheduled: (pairId, sinceDate) =>
+        get().events.filter(
+          (e) => e.pairId === pairId && e.type === 'meeting_scheduled' && (!sinceDate || e.date >= sinceDate)
+        ).length,
+      countMeetingsCompleted: (pairId, sinceDate) =>
+        get().events.filter(
+          (e) => e.pairId === pairId && e.type === 'meeting_completed' && (!sinceDate || e.date >= sinceDate)
+        ).length,
     }),
     {
       name: 'capitalcorn_state_v1',
@@ -116,6 +179,8 @@ export const useAppStore = create<AppStore>()(
         funds: state.funds,
         startups: state.startups,
         pairs: state.pairs,
+        statuses: state.statuses,
+        events: state.events,
       }),
     }
   )

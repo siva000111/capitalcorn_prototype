@@ -9,10 +9,26 @@ export type Stage = 'Pre-seed' | 'Seed' | 'Series A' | 'Series B' | 'Series C+';
 
 export type LocationTag = 'India' | 'US' | 'Europe' | 'SEA' | 'Global';
 
-export type PairStatus =
-  | 'Reached out – evaluating' | 'Interested to meet' | 'Meeting done'
-  | 'Pass' | 'Pass after meeting done' | 'Pass after 2nd meeting'
-  | 'Not a pass – re-evaluate later';
+export type StatusColor = 'slate' | 'blue' | 'indigo' | 'violet' | 'amber' | 'emerald' | 'rose';
+
+export interface StatusDef {
+  id: string;          // stable id, e.g. 'status-01' — never changes once created
+  label: string;        // user-editable display text
+  order: number;        // controls display order everywhere
+  closed: boolean;       // true = no further follow-up needed (e.g. Pass, Investment)
+  color: StatusColor;
+}
+
+export type CommEventType = 'outreach_sent' | 'reply_received' | 'meeting_scheduled' | 'meeting_completed' | 'note';
+
+export interface CommEvent {
+  id: string;
+  pairId: string;
+  date: string;            // ISO datetime
+  type: CommEventType;
+  subject?: string;
+  body?: string;
+}
 
 // position 0 => "Email 1 / Name 1", position 1 => "Email 2 / Name 2", etc. (up to 10)
 export interface Contact { email: string | null; name: string | null; }
@@ -44,11 +60,17 @@ export interface Pair {
   id: string;
   startupId: string;
   fundId: string;
-  status: PairStatus | null;      // null until the team sets it
+  status: string | null;          // StatusDef.id, or null until the team sets it
   description: string;            // "Description of the task" / note
   mailLink: string;               // "Mail Link"
   followUpDate: string | null;    // ISO date string
   matchedAt: string;              // ISO datetime when the pair was created
 }
 
-export interface AppData { funds: Fund[]; startups: Startup[]; pairs: Pair[]; }
+export interface AppData {
+  funds: Fund[];
+  startups: Startup[];
+  pairs: Pair[];
+  statuses: StatusDef[];
+  events: CommEvent[];
+}

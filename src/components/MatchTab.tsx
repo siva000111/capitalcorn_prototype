@@ -12,6 +12,7 @@ export default function MatchTab() {
   const funds = useAppStore((s) => s.funds);
   const pairs = useAppStore((s) => s.pairs);
   const createPairs = useAppStore((s) => s.createPairs);
+  const addCommEvent = useAppStore((s) => s.addCommEvent);
 
   const [startupId, setStartupId] = useState<string | null>(null);
   const [stage, setStage] = useState<Stage | null>(null);
@@ -55,7 +56,17 @@ export default function MatchTab() {
   function handleConfirm() {
     if (!startup || checked.size === 0) return;
     const fundIds = [...checked];
-    createPairs(startup.id, fundIds);
+    const newPairs = createPairs(startup.id, fundIds);
+    for (const pair of newPairs) {
+      const fund = funds.find((f) => f.id === pair.fundId);
+      addCommEvent(
+        pair.id,
+        'outreach_sent',
+        pair.matchedAt,
+        `Introduction: ${startup.name} x ${fund?.fundName ?? 'investor'}`,
+        `Sent a warm intro email with the deck attached to ${fund?.fundName ?? 'the fund'} on behalf of ${startup.name}.`
+      );
+    }
     const matchedFunds = funds.filter((f) => fundIds.includes(f.id));
     setMatchedThisSession((prev) => [...prev, ...matchedFunds]);
     setChecked(new Set());

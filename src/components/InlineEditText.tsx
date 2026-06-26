@@ -9,6 +9,8 @@ interface InlineEditTextProps {
   ariaLabel?: string;
   variant?: 'title';
   savedMessage?: string;
+  min?: string;
+  hint?: string;
 }
 
 export default function InlineEditText({
@@ -19,6 +21,8 @@ export default function InlineEditText({
   ariaLabel,
   variant,
   savedMessage = 'Saved',
+  min,
+  hint,
 }: InlineEditTextProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -55,7 +59,7 @@ export default function InlineEditText({
 
   if (editing) {
     return (
-      <span className={wrapperClass}>
+      <span className={`${wrapperClass}${hint ? ' inline-edit-wrap--with-hint' : ''}`}>
         <input
           ref={inputRef}
           className="input inline-edit-input"
@@ -63,7 +67,15 @@ export default function InlineEditText({
           value={draft}
           placeholder={placeholder}
           aria-label={ariaLabel}
-          onChange={(e) => setDraft(e.target.value)}
+          min={min}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (type === 'date' && min && v !== '' && v < min) {
+              setDraft(min);
+              return;
+            }
+            setDraft(v);
+          }}
           onBlur={commit}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -76,6 +88,7 @@ export default function InlineEditText({
             }
           }}
         />
+        {hint && <span className="field-hint">{hint}</span>}
       </span>
     );
   }

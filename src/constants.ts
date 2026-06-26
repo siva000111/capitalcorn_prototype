@@ -1,4 +1,4 @@
-import type { SectorTag, Stage, LocationTag, PairStatus } from './types';
+import type { SectorTag, Stage, LocationTag } from './types';
 
 export const SECTOR_TAGS: SectorTag[] = [
   'Fintech',
@@ -26,33 +26,7 @@ export const PRIORITIES = ['High', 'Medium', 'Low'] as const;
 
 export const INVESTOR_TYPES = ['Angel', 'VC', 'Corporate', 'Family Office'] as const;
 
-export const PAIR_STATUSES: PairStatus[] = [
-  'Reached out – evaluating',
-  'Interested to meet',
-  'Meeting done',
-  'Pass',
-  'Pass after meeting done',
-  'Pass after 2nd meeting',
-  'Not a pass – re-evaluate later',
-];
-
 export const NOT_YET_CONTACTED = 'Not yet contacted';
-
-const NEGATIVE_STATUSES: PairStatus[] = ['Pass', 'Pass after meeting done', 'Pass after 2nd meeting'];
-const NEUTRAL_STATUSES: PairStatus[] = ['Reached out – evaluating'];
-
-export type StatusTone = 'neutral' | 'positive' | 'negative';
-
-export function getStatusTone(status: PairStatus | null): StatusTone {
-  if (status === null) return 'neutral';
-  if (NEUTRAL_STATUSES.includes(status)) return 'neutral';
-  if (NEGATIVE_STATUSES.includes(status)) return 'negative';
-  return 'positive';
-}
-
-export function isActivePairStatus(status: PairStatus | null): boolean {
-  return status === null || !NEGATIVE_STATUSES.includes(status);
-}
 
 export const SECTIONS = [
   'Home',

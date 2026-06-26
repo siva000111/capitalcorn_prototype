@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAppStore } from '../store';
-import { PAIR_STATUSES, NOT_YET_CONTACTED } from '../constants';
-import type { PairStatus } from '../types';
+import { NOT_YET_CONTACTED } from '../constants';
 import StatusPill from './StatusPill';
 import InlineEditSelect from './InlineEditSelect';
 import InlineEditText from './InlineEditText';
@@ -9,13 +8,12 @@ import ConfirmButton from './ConfirmButton';
 import EmptyState from './EmptyState';
 import { showToast } from '../toast';
 
-const STATUS_OPTIONS = [
-  { value: '', label: `— ${NOT_YET_CONTACTED} —` },
-  ...PAIR_STATUSES.map((s) => ({ value: s, label: s })),
-];
-
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 interface InvestorHistoryProps {
@@ -27,8 +25,14 @@ export default function InvestorHistory({ jumpFundId, onJumpHandled }: InvestorH
   const funds = useAppStore((s) => s.funds);
   const startups = useAppStore((s) => s.startups);
   const pairs = useAppStore((s) => s.pairs);
+  const statuses = useAppStore((s) => s.statuses);
   const updatePair = useAppStore((s) => s.updatePair);
   const deletePair = useAppStore((s) => s.deletePair);
+
+  const statusOptions = useMemo(() => {
+    const sorted = [...statuses].sort((a, b) => a.order - b.order);
+    return [{ value: '', label: `— ${NOT_YET_CONTACTED} —` }, ...sorted.map((s) => ({ value: s.id, label: s.label }))];
+  }, [statuses]);
 
   const [search, setSearch] = useState('');
   const [selectedFundId, setSelectedFundId] = useState<string | null>(null);
@@ -136,11 +140,9 @@ export default function InvestorHistory({ jumpFundId, onJumpHandled }: InvestorH
                         <label>Status</label>
                         <InlineEditSelect
                           value={pair.status ?? ''}
-                          options={STATUS_OPTIONS}
-                          renderDisplay={(v) => <StatusPill status={(v || null) as PairStatus | null} />}
-                          onSave={(v) =>
-                            updatePair(pair.id, { status: v === '' ? null : (v as PairStatus) })
-                          }
+                          options={statusOptions}
+                          renderDisplay={(v) => <StatusPill statusId={v || null} />}
+                          onSave={(v) => updatePair(pair.id, { status: v === '' ? null : v })}
                           ariaLabel="status"
                         />
                       </div>
@@ -151,6 +153,8 @@ export default function InvestorHistory({ jumpFundId, onJumpHandled }: InvestorH
                           value={pair.followUpDate ?? ''}
                           onSave={(v) => updatePair(pair.id, { followUpDate: v === '' ? null : v })}
                           ariaLabel="follow-up date"
+                          min={todayIso()}
+                          hint="Only today or future dates allowed"
                         />
                       </div>
                     </div>

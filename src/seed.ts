@@ -1,4 +1,4 @@
-import type { AppData, Contact, Fund, Startup, Pair } from './types';
+import type { AppData, Contact, Fund, Startup, Pair, StatusDef, CommEvent } from './types';
 
 const c = (name: string, email: string): Contact => ({ name, email });
 
@@ -328,12 +328,25 @@ const startups: Startup[] = [
   },
 ];
 
+const statuses: StatusDef[] = [
+  { id: 'status-01', label: 'Reached out – currently evaluating', order: 1, closed: false, color: 'slate' },
+  { id: 'status-02', label: 'Interested to meet', order: 2, closed: false, color: 'blue' },
+  { id: 'status-03', label: 'Meeting done', order: 3, closed: false, color: 'indigo' },
+  { id: 'status-04', label: 'Interested for 2nd call', order: 4, closed: false, color: 'violet' },
+  { id: 'status-05', label: 'Due Diligence', order: 5, closed: false, color: 'amber' },
+  { id: 'status-06', label: 'Investment', order: 6, closed: true, color: 'emerald' },
+  { id: 'status-07', label: 'Pass', order: 7, closed: true, color: 'rose' },
+  { id: 'status-08', label: 'Pass after meeting done', order: 8, closed: true, color: 'rose' },
+  { id: 'status-09', label: 'Pass after 2nd meeting', order: 9, closed: true, color: 'rose' },
+  { id: 'status-10', label: 'Not a pass – re-evaluate later', order: 10, closed: false, color: 'amber' },
+];
+
 const pairs: Pair[] = [
   {
     id: 'pair-01',
     startupId: 'startup-01',
     fundId: 'fund-01',
-    status: 'Interested to meet',
+    status: 'status-02', // Interested to meet
     description: 'Intro call scheduled after a warm referral from a portfolio founder.',
     mailLink: 'https://mail.google.com/mail/u/0/#inbox/placeholder-pair-01',
     followUpDate: '2026-07-02',
@@ -343,7 +356,7 @@ const pairs: Pair[] = [
     id: 'pair-02',
     startupId: 'startup-01',
     fundId: 'fund-07',
-    status: 'Pass',
+    status: 'status-07', // Pass
     description: 'Fund passed, citing stage mismatch with their current fund cycle.',
     mailLink: 'https://mail.google.com/mail/u/0/#inbox/placeholder-pair-02',
     followUpDate: null,
@@ -353,7 +366,7 @@ const pairs: Pair[] = [
     id: 'pair-03',
     startupId: 'startup-01',
     fundId: 'fund-13',
-    status: 'Meeting done',
+    status: 'status-03', // Meeting done
     description: 'First meeting completed; fund requested an updated financial model.',
     mailLink: 'https://mail.google.com/mail/u/0/#inbox/placeholder-pair-03',
     followUpDate: '2026-07-15',
@@ -361,4 +374,73 @@ const pairs: Pair[] = [
   },
 ];
 
-export const seed: AppData = { funds, startups, pairs };
+const events: CommEvent[] = [
+  // pair-01 — Interested to meet
+  {
+    id: 'event-01',
+    pairId: 'pair-01',
+    date: '2026-06-10T10:00:00.000Z',
+    type: 'outreach_sent',
+    subject: 'Introduction: TallyForge x Northstar Capital',
+    body: 'Sent a warm intro email with the deck attached.',
+  },
+  {
+    id: 'event-02',
+    pairId: 'pair-01',
+    date: '2026-06-11T09:30:00.000Z',
+    type: 'reply_received',
+    subject: 'Re: Introduction: TallyForge x Northstar Capital',
+    body: "Thanks for reaching out — would love to learn more, can we set up a call next week?",
+  },
+  // pair-02 — Pass
+  {
+    id: 'event-03',
+    pairId: 'pair-02',
+    date: '2026-06-12T12:00:00.000Z',
+    type: 'outreach_sent',
+    subject: 'Introduction: TallyForge x Crosswind Capital',
+    body: 'Sent intro email with the deck attached.',
+  },
+  {
+    id: 'event-04',
+    pairId: 'pair-02',
+    date: '2026-06-13T08:00:00.000Z',
+    type: 'reply_received',
+    subject: 'Re: Introduction: TallyForge x Crosswind Capital',
+    body: 'Appreciate you thinking of us, but this is outside our current stage focus. Wishing you the best.',
+  },
+  // pair-03 — Meeting done
+  {
+    id: 'event-05',
+    pairId: 'pair-03',
+    date: '2026-06-14T14:30:00.000Z',
+    type: 'outreach_sent',
+    subject: 'Introduction: TallyForge x Coral Reef Capital',
+    body: 'Sent intro email with the deck attached.',
+  },
+  {
+    id: 'event-06',
+    pairId: 'pair-03',
+    date: '2026-06-15T10:00:00.000Z',
+    type: 'reply_received',
+    subject: 'Re: Introduction: TallyForge x Coral Reef Capital',
+    body: "Interesting — let's set up time to chat.",
+  },
+  {
+    id: 'event-07',
+    pairId: 'pair-03',
+    date: '2026-06-16T09:00:00.000Z',
+    type: 'meeting_scheduled',
+    subject: 'Call scheduled for Jun 18',
+  },
+  {
+    id: 'event-08',
+    pairId: 'pair-03',
+    date: '2026-06-18T15:00:00.000Z',
+    type: 'meeting_completed',
+    subject: 'First call completed',
+    body: 'Good first conversation; they requested an updated financial model.',
+  },
+];
+
+export const seed: AppData = { funds, startups, pairs, statuses, events };

@@ -172,7 +172,7 @@ export default function OutreachTab() {
                         </td>
                         <td>{fund.fundName}</td>
                         <td>
-                          <StatusPill status={pair.status} />
+                          <StatusPill statusId={pair.status} />
                         </td>
                         <td>
                           {eligible ? contact.email : <span className="chip">No Email {contactIndex + 1}</span>}

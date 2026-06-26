@@ -6,9 +6,10 @@ interface SidebarProps {
   active: Section;
   onSelect: (section: Section) => void;
   onOpenSearch: () => void;
+  onOpenSettings: () => void;
 }
 
-export default function Sidebar({ active, onSelect, onOpenSearch }: SidebarProps) {
+export default function Sidebar({ active, onSelect, onOpenSearch, onOpenSettings }: SidebarProps) {
   const resetToSeed = useAppStore((s) => s.resetToSeed);
 
   return (
@@ -34,6 +35,9 @@ export default function Sidebar({ active, onSelect, onOpenSearch }: SidebarProps
         ))}
       </nav>
       <div className="sidebar-footer">
+        <button type="button" className="btn btn-sm" onClick={onOpenSettings} aria-label="Settings">
+          ⚙ Settings
+        </button>
         <ConfirmButton
           label="Reset to seed"
           confirmLabel="Confirm reset"
