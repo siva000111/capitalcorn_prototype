@@ -7,7 +7,11 @@ import StartupPicker from './StartupPicker';
 import EmptyState from './EmptyState';
 import { showToast } from '../toast';
 
-export default function MatchTab() {
+interface MatchTabProps {
+  onOpenFund: (fundId: string) => void;
+}
+
+export default function MatchTab({ onOpenFund }: MatchTabProps) {
   const startups = useAppStore((s) => s.startups);
   const funds = useAppStore((s) => s.funds);
   const pairs = useAppStore((s) => s.pairs);
@@ -177,7 +181,16 @@ export default function MatchTab() {
                               aria-label={`Select ${fund.fundName}`}
                             />
                           </td>
-                          <td>{fund.fundName}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="record-name-link"
+                              onClick={() => onOpenFund(fund.id)}
+                              aria-label={`Open ${fund.fundName}`}
+                            >
+                              {fund.fundName}
+                            </button>
+                          </td>
                           <td>{fund.city}</td>
                           <td>
                             <span className="chip-row">
@@ -210,7 +223,16 @@ export default function MatchTab() {
                     <h3 className="matched-session-title">Matched this session</h3>
                     <ul className="matched-session-list">
                       {matchedThisSession.map((f, i) => (
-                        <li key={`${f.id}-${i}`}>{f.fundName}</li>
+                        <li key={`${f.id}-${i}`}>
+                          <button
+                            type="button"
+                            className="record-name-link"
+                            onClick={() => onOpenFund(f.id)}
+                            aria-label={`Open ${f.fundName}`}
+                          >
+                            {f.fundName}
+                          </button>
+                        </li>
                       ))}
                     </ul>
                   </div>

@@ -18,6 +18,7 @@ interface StartupLibraryProps {
   jumpRelationshipFundId?: string | null;
   onJumpHandled?: () => void;
   onRelationshipJumpHandled?: () => void;
+  onOpenFund: (fundId: string) => void;
 }
 
 export default function StartupLibrary({
@@ -25,6 +26,7 @@ export default function StartupLibrary({
   jumpRelationshipFundId,
   onJumpHandled,
   onRelationshipJumpHandled,
+  onOpenFund,
 }: StartupLibraryProps) {
   const startups = useAppStore((s) => s.startups);
   const pairs = useAppStore((s) => s.pairs);
@@ -103,7 +105,14 @@ export default function StartupLibrary({
                   className={highlightId === s.id ? 'row-highlight' : undefined}
                 >
                   <td>
-                    <InlineEditText value={s.name} onSave={(v) => patch(s.id, { name: v })} ariaLabel="startup name" />
+                    <button
+                      type="button"
+                      className="record-name-link"
+                      onClick={() => setViewStartupId(s.id)}
+                      aria-label={`Open ${s.name}`}
+                    >
+                      {s.name}
+                    </button>
                   </td>
                   <td>
                     <InlineEditSelect
@@ -163,6 +172,7 @@ export default function StartupLibrary({
           startup={viewStartup}
           jumpFundId={jumpRelationshipFundId}
           onJumpHandled={onRelationshipJumpHandled}
+          onOpenFund={onOpenFund}
         />
       )}
     </>

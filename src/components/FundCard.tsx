@@ -6,6 +6,7 @@ import ContactsEditor from './ContactsEditor';
 import ConfirmButton from './ConfirmButton';
 import InlineEditText from './InlineEditText';
 import InlineEditSelect from './InlineEditSelect';
+import EditableHeading from './EditableHeading';
 
 interface FundCardProps {
   fund: Fund;
@@ -26,11 +27,11 @@ export default function FundCard({ fund }: FundCardProps) {
     <div className="fund-card card-actions-host">
       <div className="fund-card-header">
         <div>
-          <InlineEditText
-            variant="title"
+          <EditableHeading
             value={fund.fundName}
             onSave={(v) => patch({ fundName: v })}
             ariaLabel="fund name"
+            textClassName="editable-heading-text editable-heading-text--fund"
           />
           <span className="fund-id-tag">{fund.id}</span>
         </div>

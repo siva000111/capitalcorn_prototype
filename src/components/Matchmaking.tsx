@@ -6,7 +6,11 @@ type Tab = 'Match' | 'Outreach';
 
 const TABS: Tab[] = ['Match', 'Outreach'];
 
-export default function Matchmaking() {
+interface MatchmakingProps {
+  onOpenFund: (fundId: string) => void;
+}
+
+export default function Matchmaking({ onOpenFund }: MatchmakingProps) {
   const [tab, setTab] = useState<Tab>('Match');
 
   return (
@@ -31,7 +35,7 @@ export default function Matchmaking() {
         ))}
       </div>
 
-      {tab === 'Match' ? <MatchTab /> : <OutreachTab />}
+      {tab === 'Match' ? <MatchTab onOpenFund={onOpenFund} /> : <OutreachTab onOpenFund={onOpenFund} />}
     </>
   );
 }

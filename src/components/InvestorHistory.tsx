@@ -19,9 +19,11 @@ function todayIso(): string {
 interface InvestorHistoryProps {
   jumpFundId?: string | null;
   onJumpHandled?: () => void;
+  onOpenFund: (fundId: string) => void;
+  onOpenStartup: (startupId: string) => void;
 }
 
-export default function InvestorHistory({ jumpFundId, onJumpHandled }: InvestorHistoryProps) {
+export default function InvestorHistory({ jumpFundId, onJumpHandled, onOpenFund, onOpenStartup }: InvestorHistoryProps) {
   const funds = useAppStore((s) => s.funds);
   const startups = useAppStore((s) => s.startups);
   const pairs = useAppStore((s) => s.pairs);
@@ -107,7 +109,16 @@ export default function InvestorHistory({ jumpFundId, onJumpHandled }: InvestorH
           ) : (
             <>
               <div className="history-header">
-                <h2 className="history-fund-name">{selectedFund.fundName}</h2>
+                <h2 className="history-fund-name">
+                  <button
+                    type="button"
+                    className="record-name-link"
+                    onClick={() => onOpenFund(selectedFund.id)}
+                    aria-label={`Open ${selectedFund.fundName}`}
+                  >
+                    {selectedFund.fundName}
+                  </button>
+                </h2>
                 <p className="history-fund-meta">{selectedFund.city}</p>
                 <div className="chip-row">
                   {selectedFund.focusAreas.map((tag) => (
@@ -124,7 +135,14 @@ export default function InvestorHistory({ jumpFundId, onJumpHandled }: InvestorH
                 timeline.map(({ pair, startup }) => (
                   <div className="timeline-entry card-actions-host" key={pair.id}>
                     <div className="timeline-entry-header">
-                      <span className="timeline-startup-name">{startup.name}</span>
+                      <button
+                        type="button"
+                        className="record-name-link timeline-startup-name"
+                        onClick={() => onOpenStartup(startup.id)}
+                        aria-label={`Open ${startup.name}`}
+                      >
+                        {startup.name}
+                      </button>
                       <span className="timeline-date">Matched {formatDate(pair.matchedAt)}</span>
                       <span className="row-actions">
                         <ConfirmButton

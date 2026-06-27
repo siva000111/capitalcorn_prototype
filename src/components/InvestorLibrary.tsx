@@ -1,11 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAppStore } from '../store';
 import { SECTOR_TAGS, STAGES, LOCATION_TAGS, PRIORITIES, INVESTOR_TYPES } from '../constants';
 import type { SectorTag, Stage, LocationTag } from '../types';
 import FundCard from './FundCard';
 import EmptyState from './EmptyState';
 
-export default function InvestorLibrary() {
+interface InvestorLibraryProps {
+  jumpFundId?: string | null;
+  onJumpHandled?: () => void;
+}
+
+export default function InvestorLibrary({ jumpFundId, onJumpHandled }: InvestorLibraryProps) {
   const funds = useAppStore((s) => s.funds);
   const addFund = useAppStore((s) => s.addFund);
 
@@ -17,6 +22,8 @@ export default function InvestorLibrary() {
   const [priorityFilter, setPriorityFilter] = useState('');
   const [ticketMin, setTicketMin] = useState('');
   const [ticketMax, setTicketMax] = useState('');
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const cardRefs = useRef(new Map<string, HTMLDivElement>());
 
   function clearFilters() {
     setSearch('');
@@ -49,6 +56,21 @@ export default function InvestorLibrary() {
       return true;
     });
   }, [funds, search, sectorFilter, stageFilter, locationFilter, typeFilter, priorityFilter, ticketMin, ticketMax]);
+
+  useEffect(() => {
+    if (!jumpFundId) return;
+    clearFilters();
+    setHighlightId(jumpFundId);
+    onJumpHandled?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jumpFundId, onJumpHandled]);
+
+  useEffect(() => {
+    if (!highlightId) return;
+    cardRefs.current.get(highlightId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const timer = setTimeout(() => setHighlightId(null), 2000);
+    return () => clearTimeout(timer);
+  }, [highlightId]);
 
   return (
     <>
@@ -182,7 +204,18 @@ export default function InvestorLibrary() {
       {filtered.length === 0 ? (
         <EmptyState message="No funds match the current filters." action={{ label: 'Clear filters', onClick: clearFilters }} />
       ) : (
-        filtered.map((fund) => <FundCard key={fund.id} fund={fund} />)
+        filtered.map((fund) => (
+          <div
+            key={fund.id}
+            ref={(el) => {
+              if (el) cardRefs.current.set(fund.id, el);
+              else cardRefs.current.delete(fund.id);
+            }}
+            className={highlightId === fund.id ? 'row-highlight' : undefined}
+          >
+            <FundCard fund={fund} />
+          </div>
+        ))
       )}
     </>
   );

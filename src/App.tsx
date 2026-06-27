@@ -16,6 +16,7 @@ function App() {
   const [jumpFundId, setJumpFundId] = useState<string | null>(null);
   const [jumpStartupId, setJumpStartupId] = useState<string | null>(null);
   const [jumpRelationshipFundId, setJumpRelationshipFundId] = useState<string | null>(null);
+  const [jumpLibraryFundId, setJumpLibraryFundId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -46,6 +47,11 @@ function App() {
     setJumpRelationshipFundId(fundId);
   }
 
+  function openFund(fundId: string) {
+    setSection('Investor library');
+    setJumpLibraryFundId(fundId);
+  }
+
   return (
     <div className="app-shell">
       <Sidebar
@@ -56,18 +62,26 @@ function App() {
       />
       <main className="app-content">
         {section === 'Home' && <Home onSelectPair={navigateToRelationship} />}
-        {section === 'Investor library' && <InvestorLibrary />}
+        {section === 'Investor library' && (
+          <InvestorLibrary jumpFundId={jumpLibraryFundId} onJumpHandled={() => setJumpLibraryFundId(null)} />
+        )}
         {section === 'Startup library' && (
           <StartupLibrary
             jumpStartupId={jumpStartupId}
             jumpRelationshipFundId={jumpRelationshipFundId}
             onJumpHandled={() => setJumpStartupId(null)}
             onRelationshipJumpHandled={() => setJumpRelationshipFundId(null)}
+            onOpenFund={openFund}
           />
         )}
-        {section === 'Matchmaking & outreach' && <Matchmaking />}
+        {section === 'Matchmaking & outreach' && <Matchmaking onOpenFund={openFund} />}
         {section === 'Investor history' && (
-          <InvestorHistory jumpFundId={jumpFundId} onJumpHandled={() => setJumpFundId(null)} />
+          <InvestorHistory
+            jumpFundId={jumpFundId}
+            onJumpHandled={() => setJumpFundId(null)}
+            onOpenFund={openFund}
+            onOpenStartup={navigateToStartupLibrary}
+          />
         )}
         {section === 'Reports' && <Reports />}
       </main>

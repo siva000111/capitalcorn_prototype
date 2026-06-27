@@ -288,6 +288,24 @@ summary:focus-visible,
   cursor: not-allowed;
 }
 
+/* Record name used purely for navigation — opens the detail, never renames.
+   Kept early in the cascade so context-specific classes (e.g. table cells,
+   page headings) can override its font sizing without specificity fights. */
+.record-name-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--navy);
+  cursor: pointer;
+  text-align: left;
+}
+
+.record-name-link:hover {
+  text-decoration: underline;
+}
+
 /* ---------- Row-level hover actions ---------- */
 
 .row-actions {
@@ -855,6 +873,66 @@ tr.row-disabled td {
 .inline-edit-title .inline-edit-input {
   font-size: var(--fs-section);
   font-weight: 600;
+}
+
+/* ---------- Editable heading (identity fields) ---------- */
+
+.editable-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.editable-heading-text {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editable-heading-text--fund {
+  font-size: var(--fs-section);
+}
+
+.editable-heading-text--panel {
+  font-size: var(--fs-section);
+  color: var(--text-primary);
+}
+
+.editable-heading-edit {
+  opacity: 0;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: opacity 120ms ease;
+}
+
+.editable-heading:hover .editable-heading-edit,
+.editable-heading:focus-within .editable-heading-edit {
+  opacity: 1;
+}
+
+.editable-heading-input {
+  font-weight: 600;
+  min-width: 180px;
+}
+
+.editable-heading-input.editable-heading-text--fund,
+.editable-heading-input.editable-heading-text--panel {
+  font-size: var(--fs-section);
+}
+
+.relationship-panel-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+
+.relationship-panel-suffix {
+  font-size: var(--fs-section);
+  color: var(--text-secondary);
 }
 
 /* ---------- Multiselect ---------- */

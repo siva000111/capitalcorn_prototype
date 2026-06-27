@@ -10,7 +10,11 @@ import { showToast } from '../toast';
 
 const CONTACT_SLOTS = Array.from({ length: 10 }, (_, i) => i);
 
-export default function OutreachTab() {
+interface OutreachTabProps {
+  onOpenFund: (fundId: string) => void;
+}
+
+export default function OutreachTab({ onOpenFund }: OutreachTabProps) {
   const startups = useAppStore((s) => s.startups);
   const funds = useAppStore((s) => s.funds);
   const pairs = useAppStore((s) => s.pairs);
@@ -170,7 +174,16 @@ export default function OutreachTab() {
                             aria-label={`Select ${fund.fundName}`}
                           />
                         </td>
-                        <td>{fund.fundName}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className="record-name-link"
+                            onClick={() => onOpenFund(fund.id)}
+                            aria-label={`Open ${fund.fundName}`}
+                          >
+                            {fund.fundName}
+                          </button>
+                        </td>
                         <td>
                           <StatusPill statusId={pair.status} />
                         </td>

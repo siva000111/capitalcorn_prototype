@@ -9,6 +9,7 @@ interface PairDetailPanelProps {
   startup: Startup;
   fund: Fund;
   pair: Pair;
+  onOpenFund: (fundId: string) => void;
 }
 
 const SNIPPET_LENGTH = 90;
@@ -34,7 +35,7 @@ function nowForInput(): string {
   return d.toISOString().slice(0, 16);
 }
 
-export default function PairDetailPanel({ startup, fund, pair }: PairDetailPanelProps) {
+export default function PairDetailPanel({ startup, fund, pair, onOpenFund }: PairDetailPanelProps) {
   const allEvents = useAppStore((s) => s.events);
   const addCommEvent = useAppStore((s) => s.addCommEvent);
 
@@ -75,7 +76,15 @@ export default function PairDetailPanel({ startup, fund, pair }: PairDetailPanel
     <div className="pair-detail-panel">
       <div className="pair-detail-header">
         <h3 className="pair-detail-title">
-          Inbox — {startup.name} × {fund.fundName}
+          Inbox — {startup.name} ×{' '}
+          <button
+            type="button"
+            className="record-name-link"
+            onClick={() => onOpenFund(fund.id)}
+            aria-label={`Open ${fund.fundName}`}
+          >
+            {fund.fundName}
+          </button>
         </h3>
         <button type="button" className="btn btn-sm" onClick={() => setComposing((c) => !c)}>
           {composing ? 'Cancel' : '+ Log new email'}

@@ -3,22 +3,30 @@ import { useAppStore } from '../store';
 import StatusPill from './StatusPill';
 import EmptyState from './EmptyState';
 import PairDetailPanel from './PairDetailPanel';
+import EditableHeading from './EditableHeading';
 import type { Startup } from '../types';
 
 interface StartupRelationshipPanelProps {
   startup: Startup;
   jumpFundId?: string | null;
   onJumpHandled?: () => void;
+  onOpenFund: (fundId: string) => void;
 }
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-export default function StartupRelationshipPanel({ startup, jumpFundId, onJumpHandled }: StartupRelationshipPanelProps) {
+export default function StartupRelationshipPanel({
+  startup,
+  jumpFundId,
+  onJumpHandled,
+  onOpenFund,
+}: StartupRelationshipPanelProps) {
   const funds = useAppStore((s) => s.funds);
   const pairs = useAppStore((s) => s.pairs);
   const events = useAppStore((s) => s.events);
+  const updateStartup = useAppStore((s) => s.updateStartup);
   const countReplies = useAppStore((s) => s.countReplies);
   const countMeetingsCompleted = useAppStore((s) => s.countMeetingsCompleted);
 
@@ -59,7 +67,15 @@ export default function StartupRelationshipPanel({ startup, jumpFundId, onJumpHa
 
   return (
     <section className="match-step">
-      <h2 className="step-title">{startup.name} — matched investors</h2>
+      <div className="relationship-panel-header">
+        <EditableHeading
+          value={startup.name}
+          onSave={(v) => updateStartup(startup.id, { name: v })}
+          ariaLabel="startup name"
+          textClassName="editable-heading-text editable-heading-text--panel"
+        />
+        <span className="relationship-panel-suffix">— matched investors</span>
+      </div>
 
       {relationships.length === 0 ? (
         <EmptyState message="No matched investors yet. Use the Match tab to find candidates." />
@@ -86,7 +102,19 @@ export default function StartupRelationshipPanel({ startup, jumpFundId, onJumpHa
                   }`}
                   onClick={() => setSelectedPairId(selectedPairId === r.pair.id ? null : r.pair.id)}
                 >
-                  <td>{r.fund.fundName}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="record-name-link"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenFund(r.fund.id);
+                      }}
+                      aria-label={`Open ${r.fund.fundName}`}
+                    >
+                      {r.fund.fundName}
+                    </button>
+                  </td>
                   <td>
                     <StatusPill statusId={r.pair.status} />
                   </td>
@@ -102,7 +130,15 @@ export default function StartupRelationshipPanel({ startup, jumpFundId, onJumpHa
         </div>
       )}
 
-      {selected && <PairDetailPanel key={selected.pair.id} startup={startup} fund={selected.fund} pair={selected.pair} />}
+      {selected && (
+        <PairDetailPanel
+          key={selected.pair.id}
+          startup={startup}
+          fund={selected.fund}
+          pair={selected.pair}
+          onOpenFund={onOpenFund}
+        />
+      )}
     </section>
   );
 }
