@@ -132,52 +132,60 @@ export default function InvestorHistory({ jumpFundId, onJumpHandled, onOpenFund,
               {timeline.length === 0 ? (
                 <EmptyState message="No startups matched with this fund yet." />
               ) : (
-                timeline.map(({ pair, startup }) => (
-                  <div className="timeline-entry card-actions-host" key={pair.id}>
-                    <div className="timeline-entry-header">
-                      <button
-                        type="button"
-                        className="record-name-link timeline-startup-name"
-                        onClick={() => onOpenStartup(startup.id)}
-                        aria-label={`Open ${startup.name}`}
-                      >
-                        {startup.name}
-                      </button>
-                      <span className="timeline-date">Matched {formatDate(pair.matchedAt)}</span>
-                      <span className="row-actions">
-                        <ConfirmButton
-                          label="Unmatch"
-                          prompt="Remove this match? This cannot be undone."
-                          confirmLabel="Remove"
-                          onConfirm={() => handleUnmatch(pair.id)}
-                        />
-                      </span>
-                    </div>
-                    <div className="timeline-fields">
-                      <div className="field">
-                        <label>Status</label>
-                        <InlineEditSelect
-                          value={pair.status ?? ''}
-                          options={statusOptions}
-                          renderDisplay={(v) => <StatusPill statusId={v || null} />}
-                          onSave={(v) => updatePair(pair.id, { status: v === '' ? null : v })}
-                          ariaLabel="status"
-                        />
+                <div className="timeline">
+                  {timeline.map(({ pair, startup }) => (
+                    <div className="timeline-entry card-actions-host" key={pair.id}>
+                      <span className="timeline-dot" aria-hidden="true" />
+                      <div className="timeline-entry-body">
+                        <div className="timeline-entry-header">
+                          <button
+                            type="button"
+                            className="record-name-link timeline-startup-name"
+                            onClick={() => onOpenStartup(startup.id)}
+                            aria-label={`Open ${startup.name}`}
+                          >
+                            {startup.name}
+                          </button>
+                          <span className="timeline-entry-meta">
+                            <StatusPill statusId={pair.status} />
+                            <span className="timeline-date">Matched {formatDate(pair.matchedAt)}</span>
+                          </span>
+                          <span className="row-actions">
+                            <ConfirmButton
+                              label="Unmatch"
+                              prompt="Remove this match? This cannot be undone."
+                              confirmLabel="Remove"
+                              onConfirm={() => handleUnmatch(pair.id)}
+                            />
+                          </span>
+                        </div>
+                        <div className="timeline-fields">
+                          <div className="field">
+                            <label>Status</label>
+                            <InlineEditSelect
+                              value={pair.status ?? ''}
+                              options={statusOptions}
+                              renderDisplay={(v) => <StatusPill statusId={v || null} />}
+                              onSave={(v) => updatePair(pair.id, { status: v === '' ? null : v })}
+                              ariaLabel="status"
+                            />
+                          </div>
+                          <div className="field">
+                            <label>Follow-up date</label>
+                            <InlineEditText
+                              type="date"
+                              value={pair.followUpDate ?? ''}
+                              onSave={(v) => updatePair(pair.id, { followUpDate: v === '' ? null : v })}
+                              ariaLabel="follow-up date"
+                              min={todayIso()}
+                              hint="Only today or future dates allowed"
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="field">
-                        <label>Follow-up date</label>
-                        <InlineEditText
-                          type="date"
-                          value={pair.followUpDate ?? ''}
-                          onSave={(v) => updatePair(pair.id, { followUpDate: v === '' ? null : v })}
-                          ariaLabel="follow-up date"
-                          min={todayIso()}
-                          hint="Only today or future dates allowed"
-                        />
-                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </>
           )}

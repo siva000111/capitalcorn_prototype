@@ -4,6 +4,7 @@ import { SECTOR_TAGS, STAGES, LOCATION_TAGS, PRIORITIES, INVESTOR_TYPES } from '
 import type { SectorTag, Stage, LocationTag } from '../types';
 import FundCard from './FundCard';
 import EmptyState from './EmptyState';
+import { showToast } from '../toast';
 
 interface InvestorLibraryProps {
   jumpFundId?: string | null;
@@ -12,7 +13,12 @@ interface InvestorLibraryProps {
 
 export default function InvestorLibrary({ jumpFundId, onJumpHandled }: InvestorLibraryProps) {
   const funds = useAppStore((s) => s.funds);
-  const addFund = useAppStore((s) => s.addFund);
+  const addFundAction = useAppStore((s) => s.addFund);
+
+  function addFund() {
+    addFundAction();
+    showToast('Fund added');
+  }
 
   const [search, setSearch] = useState('');
   const [sectorFilter, setSectorFilter] = useState<SectorTag | ''>('');

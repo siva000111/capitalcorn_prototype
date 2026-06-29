@@ -7,6 +7,7 @@ import ConfirmButton from './ConfirmButton';
 import InlineEditText from './InlineEditText';
 import InlineEditSelect from './InlineEditSelect';
 import EditableHeading from './EditableHeading';
+import { showToast } from '../toast';
 
 interface FundCardProps {
   fund: Fund;
@@ -36,7 +37,14 @@ export default function FundCard({ fund }: FundCardProps) {
           <span className="fund-id-tag">{fund.id}</span>
         </div>
         <span className="row-actions">
-          <ConfirmButton label="Delete" confirmLabel="Confirm delete" onConfirm={() => deleteFund(fund.id)} />
+          <ConfirmButton
+            label="Delete"
+            confirmLabel="Confirm delete"
+            onConfirm={() => {
+              deleteFund(fund.id);
+              showToast('Fund deleted');
+            }}
+          />
         </span>
       </div>
 

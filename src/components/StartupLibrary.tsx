@@ -8,6 +8,7 @@ import InlineEditSelect from './InlineEditSelect';
 import EmptyState from './EmptyState';
 import StartupRelationshipPanel from './StartupRelationshipPanel';
 import LogActivityPanel from './LogActivityPanel';
+import { showToast } from '../toast';
 
 const SECTOR_OPTIONS = SECTOR_TAGS.map((tag) => ({ value: tag, label: tag }));
 const STAGE_OPTIONS = STAGES.map((stage) => ({ value: stage, label: stage }));
@@ -30,9 +31,20 @@ export default function StartupLibrary({
 }: StartupLibraryProps) {
   const startups = useAppStore((s) => s.startups);
   const pairs = useAppStore((s) => s.pairs);
+  const events = useAppStore((s) => s.events);
   const updateStartup = useAppStore((s) => s.updateStartup);
-  const addStartup = useAppStore((s) => s.addStartup);
-  const deleteStartup = useAppStore((s) => s.deleteStartup);
+  const addStartupAction = useAppStore((s) => s.addStartup);
+  const deleteStartupAction = useAppStore((s) => s.deleteStartup);
+
+  function addStartup() {
+    addStartupAction();
+    showToast('Startup added');
+  }
+
+  function deleteStartup(id: string) {
+    deleteStartupAction(id);
+    showToast('Startup deleted');
+  }
 
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [viewStartupId, setViewStartupId] = useState<string | null>(null);
@@ -55,6 +67,20 @@ export default function StartupLibrary({
 
   function pairCount(startupId: string): number {
     return pairs.filter((p) => p.startupId === startupId).length;
+  }
+
+  // Needs-action = a reply_received with no later note on the same pair (same definition the Inbox uses).
+  function needsActionCount(startupId: string): number {
+    const startupPairs = pairs.filter((p) => p.startupId === startupId);
+    let count = 0;
+    for (const pair of startupPairs) {
+      const pairEvents = events.filter((e) => e.pairId === pair.id);
+      const noteDates = pairEvents.filter((e) => e.type === 'note').map((e) => e.date);
+      for (const e of pairEvents) {
+        if (e.type === 'reply_received' && !noteDates.some((d) => d >= e.date)) count += 1;
+      }
+    }
+    return count;
   }
 
   const viewStartup = startups.find((s) => s.id === viewStartupId) ?? null;
@@ -91,7 +117,6 @@ export default function StartupLibrary({
                 <th className="cell-numeric">Raise ($M)</th>
                 <th>Location</th>
                 <th></th>
-                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -105,14 +130,35 @@ export default function StartupLibrary({
                   className={highlightId === s.id ? 'row-highlight' : undefined}
                 >
                   <td>
-                    <button
-                      type="button"
-                      className="record-name-link"
-                      onClick={() => setViewStartupId(s.id)}
-                      aria-label={`Open ${s.name}`}
-                    >
-                      {s.name}
-                    </button>
+                    <span className="name-cell">
+                      <button
+                        type="button"
+                        className="record-name-link"
+                        onClick={() => setViewStartupId(s.id)}
+                        aria-label={`Open ${s.name}`}
+                      >
+                        {s.name}
+                      </button>
+                      {(() => {
+                        const needs = needsActionCount(s.id);
+                        const total = pairCount(s.id);
+                        if (needs > 0) {
+                          return (
+                            <span className="count-badge count-badge--attention" title="Replies awaiting a task update">
+                              {needs} need{needs === 1 ? 's' : ''} action
+                            </span>
+                          );
+                        }
+                        if (total > 0) {
+                          return (
+                            <span className="count-badge" title="Matched investors">
+                              {total} matched
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </span>
                   </td>
                   <td>
                     <InlineEditSelect
@@ -145,15 +191,6 @@ export default function StartupLibrary({
                       onSave={(v) => patch(s.id, { location: v as Startup['location'] })}
                       ariaLabel="location"
                     />
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className={`btn btn-sm${viewStartupId === s.id ? ' btn-primary' : ''}`}
-                      onClick={() => setViewStartupId(viewStartupId === s.id ? null : s.id)}
-                    >
-                      Relationships ({pairCount(s.id)})
-                    </button>
                   </td>
                   <td>
                     <span className="row-actions">

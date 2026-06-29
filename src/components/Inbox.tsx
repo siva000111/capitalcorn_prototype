@@ -19,7 +19,35 @@ interface InboxRow {
 
 const SNIPPET_LENGTH = 90;
 
-function formatDateTime(iso: string): string {
+// Gmail-style relative date: "2h ago" today, "Yesterday", "3 Jun", or "3 Jun 2025" for prior years.
+function relativeDate(iso: string): string {
+  const then = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - then.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+
+  if (diffMin < 1) return 'Just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfThen = new Date(then.getFullYear(), then.getMonth(), then.getDate());
+  const dayDiff = Math.round((startOfToday.getTime() - startOfThen.getTime()) / 86400000);
+
+  if (dayDiff === 0) {
+    const diffHr = Math.floor(diffMin / 60);
+    return `${diffHr}h ago`;
+  }
+  if (dayDiff === 1) return 'Yesterday';
+
+  const sameYear = then.getFullYear() === now.getFullYear();
+  return then.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  });
+}
+
+function fullDateTime(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
     year: 'numeric',
     month: 'short',
@@ -225,7 +253,9 @@ export default function Inbox() {
                       ✓ Actioned
                     </span>
                   )}
-                  <span className="inbox-item-date">{formatDateTime(r.event.date)}</span>
+                  <span className="inbox-item-date" title={fullDateTime(r.event.date)}>
+                    {relativeDate(r.event.date)}
+                  </span>
                 </button>
 
                 {open && (

@@ -77,8 +77,24 @@ export default function MatchTab({ onOpenFund }: MatchTabProps) {
     showToast(`Matched ${fundIds.length} fund${fundIds.length === 1 ? '' : 's'} to ${startup.name}`);
   }
 
+  const currentStep = !startup ? 1 : selectedSectors.length === 0 ? 3 : 4;
+  const steps = ['Select startup', 'Base filters', 'Sector selection', 'Candidates'];
+
   return (
     <>
+      <ol className="step-indicator" aria-label={`Step ${currentStep} of ${steps.length}`}>
+        {steps.map((label, i) => {
+          const n = i + 1;
+          const state = n < currentStep ? 'done' : n === currentStep ? 'active' : 'upcoming';
+          return (
+            <li key={label} className={`step-indicator-item step-indicator-item--${state}`}>
+              <span className="step-indicator-num">{state === 'done' ? '✓' : n}</span>
+              <span className="step-indicator-label">{label}</span>
+            </li>
+          );
+        })}
+      </ol>
+
       <section className="match-step">
         <h2 className="step-title">1. Select a startup</h2>
         <StartupPicker selectedId={startupId} onSelect={selectStartup} />

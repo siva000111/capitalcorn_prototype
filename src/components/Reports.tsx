@@ -136,54 +136,69 @@ export default function Reports() {
 
       {startup && metrics && (
         <section className="match-step">
-          <div className="report-cards">
-            <div className="report-card">
-              <div className="report-card-count">{metrics.totalOutreach}</div>
-              <div className="report-card-label">Total Investor Outreach</div>
+          <div className="report-group">
+            <h3 className="report-group-title">Pipeline</h3>
+            <div className="report-cards">
+              <div className="report-card">
+                <div className="report-card-count">{metrics.totalOutreach}</div>
+                <div className="report-card-label">Total Investor Outreach</div>
+              </div>
+              <div className="report-card">
+                <div className="report-card-count">{metrics.interested}</div>
+                <div className="report-card-label">{statusByKey.interested?.label ?? 'Interested Investors'}</div>
+              </div>
+              <div className="report-card">
+                <div className="report-card-count">{metrics.secondMeetings}</div>
+                <div className="report-card-label">{statusByKey.secondCall?.label ?? 'Second Meetings'}</div>
+              </div>
+              <div className="report-card">
+                <div className="report-card-count">{metrics.dueDiligence}</div>
+                <div className="report-card-label">{statusByKey.dueDiligence?.label ?? 'Due Diligence'}</div>
+              </div>
+              <div className="report-card">
+                <div className="report-card-count">{metrics.investments}</div>
+                <div className="report-card-label">{statusByKey.investment?.label ?? 'Investments'}</div>
+              </div>
+              <div className="report-card">
+                <div className="report-card-count">{metrics.pass}</div>
+                <div className="report-card-label">{statusByKey.pass?.label ?? 'Pass'}</div>
+              </div>
+              <div className="report-card">
+                <div className="report-card-count">{metrics.passAfterMeeting}</div>
+                <div className="report-card-label">{statusByKey.passAfterMeeting?.label ?? 'Pass After Meeting'}</div>
+              </div>
             </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.repliesThisWeek}</div>
-              <div className="report-card-label">Total Replies Received</div>
+          </div>
+
+          <div className="report-group">
+            <h3 className="report-group-title">Engagement</h3>
+            <div className="report-cards">
+              <div className="report-card">
+                <div className="report-card-count">{metrics.repliesThisWeek}</div>
+                <div className="report-card-label">Total Replies Received</div>
+              </div>
+              <div className="report-card">
+                <div className="report-card-count">{metrics.meetingsScheduledThisWeek}</div>
+                <div className="report-card-label">Total Meetings Scheduled</div>
+              </div>
+              <div className="report-card">
+                <div className="report-card-count">{metrics.meetingsCompletedThisWeek}</div>
+                <div className="report-card-label">Total Meetings Completed</div>
+              </div>
             </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.meetingsScheduledThisWeek}</div>
-              <div className="report-card-label">Total Meetings Scheduled</div>
-            </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.meetingsCompletedThisWeek}</div>
-              <div className="report-card-label">Total Meetings Completed</div>
-            </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.interested}</div>
-              <div className="report-card-label">{statusByKey.interested?.label ?? 'Interested Investors'}</div>
-            </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.secondMeetings}</div>
-              <div className="report-card-label">{statusByKey.secondCall?.label ?? 'Second Meetings'}</div>
-            </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.dueDiligence}</div>
-              <div className="report-card-label">{statusByKey.dueDiligence?.label ?? 'Due Diligence'}</div>
-            </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.investments}</div>
-              <div className="report-card-label">{statusByKey.investment?.label ?? 'Investments'}</div>
-            </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.pass}</div>
-              <div className="report-card-label">{statusByKey.pass?.label ?? 'Pass'}</div>
-            </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.passAfterMeeting}</div>
-              <div className="report-card-label">{statusByKey.passAfterMeeting?.label ?? 'Pass After Meeting'}</div>
-            </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.pendingFollowUps}</div>
-              <div className="report-card-label">Pending Follow-ups</div>
-            </div>
-            <div className="report-card">
-              <div className="report-card-count">{metrics.noResponse}</div>
-              <div className="report-card-label">No Response</div>
+          </div>
+
+          <div className="report-group">
+            <h3 className="report-group-title">Attention</h3>
+            <div className="report-cards">
+              <div className="report-card">
+                <div className="report-card-count">{metrics.pendingFollowUps}</div>
+                <div className="report-card-label">Pending Follow-ups</div>
+              </div>
+              <div className="report-card">
+                <div className="report-card-count">{metrics.noResponse}</div>
+                <div className="report-card-label">No Response</div>
+              </div>
             </div>
           </div>
         </section>

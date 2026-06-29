@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAppStore } from '../store';
 import InlineEditText from './InlineEditText';
 import ConfirmButton from './ConfirmButton';
+import { showToast } from '../toast';
 
 interface SettingsProps {
   onClose: () => void;
@@ -27,6 +28,7 @@ export default function Settings({ onClose }: SettingsProps) {
     }
     setBlockedMessage(null);
     deleteStatus(statusId);
+    showToast('Status deleted');
   }
 
   function handleDrop(targetId: string) {
@@ -95,7 +97,14 @@ export default function Settings({ onClose }: SettingsProps) {
           ))}
         </div>
 
-        <button type="button" className="btn btn-sm" onClick={() => addStatus()}>
+        <button
+          type="button"
+          className="btn btn-sm"
+          onClick={() => {
+            addStatus();
+            showToast('Status added');
+          }}
+        >
           + Add status
         </button>
       </div>
