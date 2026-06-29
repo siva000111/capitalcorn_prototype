@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useAppStore } from '../store';
-import StartupPicker from './StartupPicker';
 import TaskUpdateForm from './TaskUpdateForm';
-import EmailComposeForm from './EmailComposeForm';
 import EmptyState from './EmptyState';
 import { showToast } from '../toast';
 import type { CommEvent, Fund, MailAccount, Pair, Startup } from '../types';
@@ -93,12 +91,6 @@ export default function Inbox() {
   const [addingAccount, setAddingAccount] = useState(false);
   const [newAddress, setNewAddress] = useState('');
 
-  // Compose (log a simulated email). Sending account defaults from the switcher.
-  const [composing, setComposing] = useState(false);
-  const [composeAccountId, setComposeAccountId] = useState<string>('');
-  const [composeStartupId, setComposeStartupId] = useState<string | null>(null);
-  const [composePairId, setComposePairId] = useState<string | null>(null);
-
   const selectedAccount = mailAccounts.find((a) => a.id === selectedAccountId) ?? null;
 
   const rows = useMemo(() => {
@@ -139,19 +131,6 @@ export default function Inbox() {
     return list;
   }, [accountRows, filter, search]);
 
-  function openCompose() {
-    setComposing(true);
-    setComposeAccountId(selectedAccountId ?? mailAccounts[0]?.id ?? '');
-    setComposeStartupId(null);
-    setComposePairId(null);
-  }
-
-  function closeCompose() {
-    setComposing(false);
-    setComposeStartupId(null);
-    setComposePairId(null);
-  }
-
   function handleAddAccount() {
     const addr = newAddress.trim();
     if (!addr) return;
@@ -161,11 +140,6 @@ export default function Inbox() {
     setAddingAccount(false);
     showToast('Mail account connected');
   }
-
-  const composeStartupPairs = useMemo(
-    () => (composeStartupId ? pairs.filter((p) => p.startupId === composeStartupId) : []),
-    [pairs, composeStartupId]
-  );
 
   return (
     <>
@@ -240,8 +214,8 @@ export default function Inbox() {
               </>
             )}
           </div>
-          <button type="button" className="btn btn-primary" onClick={() => (composing ? closeCompose() : openCompose())}>
-            {composing ? 'Cancel' : '+ Log email'}
+          <button type="button" className="btn btn-primary">
+            + Log email
           </button>
         </div>
       </div>
@@ -285,69 +259,6 @@ export default function Inbox() {
         </div>
       )}
 
-      {composing && (
-        <div className="inbox-log-new">
-          <div className="field">
-            <label htmlFor="compose-from">From account</label>
-            <select
-              id="compose-from"
-              className="select"
-              value={composeAccountId}
-              onChange={(e) => setComposeAccountId(e.target.value)}
-            >
-              {mailAccounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.address}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {!composeStartupId ? (
-            <>
-              <h3 className="inbox-log-new-step-title">Select a startup</h3>
-              <StartupPicker selectedId={composeStartupId} onSelect={setComposeStartupId} />
-            </>
-          ) : !composePairId ? (
-            <>
-              <h3 className="inbox-log-new-step-title">
-                Select an investor for {startups.find((s) => s.id === composeStartupId)?.name}
-              </h3>
-              {composeStartupPairs.length === 0 ? (
-                <EmptyState message="No matched investors for this startup yet. Use the Match tab to find candidates first." />
-              ) : (
-                <div className="startup-picker">
-                  {composeStartupPairs.map((p) => {
-                    const fund = funds.find((f) => f.id === p.fundId);
-                    if (!fund) return null;
-                    return (
-                      <button key={p.id} type="button" className="startup-pick-row" onClick={() => setComposePairId(p.id)}>
-                        <span className="startup-pick-name">{fund.fundName}</span>
-                        <span className="startup-pick-meta">{fund.city}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              <button type="button" className="btn btn-sm" onClick={() => setComposeStartupId(null)}>
-                ← Back to startups
-              </button>
-            </>
-          ) : (
-            <>
-              <h3 className="inbox-log-new-step-title">
-                Log email — {startups.find((s) => s.id === composeStartupId)?.name} ×{' '}
-                {funds.find((f) => f.id === pairs.find((p) => p.id === composePairId)?.fundId)?.fundName}
-              </h3>
-              <EmailComposeForm pairId={composePairId} account={composeAccountId} onLogged={closeCompose} />
-              <button type="button" className="btn btn-sm" onClick={() => setComposePairId(null)}>
-                ← Back to investors
-              </button>
-            </>
-          )}
-        </div>
-      )}
-
       <div className="inbox-toolbar">
         <input
           className="input inbox-search"
@@ -376,11 +287,7 @@ export default function Inbox() {
 
       {visibleRows.length === 0 ? (
         <EmptyState
-          message={
-            filter === 'needsAction'
-              ? 'Nothing needs action right now.'
-              : 'No emails logged yet. Use “+ Log email” to add one.'
-          }
+          message={filter === 'needsAction' ? 'Nothing needs action right now.' : 'No emails logged yet.'}
         />
       ) : (
         <div className="inbox-list">
