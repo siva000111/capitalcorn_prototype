@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Sidebar from './components/Sidebar';
+import Inbox from './components/Inbox';
 import InvestorLibrary from './components/InvestorLibrary';
 import StartupLibrary from './components/StartupLibrary';
 import Matchmaking from './components/Matchmaking';
@@ -62,6 +63,7 @@ function App() {
       />
       <main className="app-content">
         {section === 'Home' && <Home onSelectPair={navigateToRelationship} />}
+        {section === 'Inbox' && <Inbox />}
         {section === 'Investor library' && (
           <InvestorLibrary jumpFundId={jumpLibraryFundId} onJumpHandled={() => setJumpLibraryFundId(null)} />
         )}

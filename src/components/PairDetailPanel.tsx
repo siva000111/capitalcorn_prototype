@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { useAppStore } from '../store';
 import EmptyState from './EmptyState';
 import TaskUpdateForm from './TaskUpdateForm';
-import { showToast } from '../toast';
-import type { CommEventType, Fund, Pair, Startup } from '../types';
+import EmailComposeForm from './EmailComposeForm';
+import type { Fund, Pair, Startup } from '../types';
 
 interface PairDetailPanelProps {
   startup: Startup;
@@ -29,15 +29,8 @@ function snippet(body: string | undefined): string {
   return body.length > SNIPPET_LENGTH ? body.slice(0, SNIPPET_LENGTH) + '…' : body;
 }
 
-function nowForInput(): string {
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 16);
-}
-
 export default function PairDetailPanel({ startup, fund, pair, onOpenFund }: PairDetailPanelProps) {
   const allEvents = useAppStore((s) => s.events);
-  const addCommEvent = useAppStore((s) => s.addCommEvent);
 
   const inboxEvents = useMemo(
     () =>
@@ -58,19 +51,6 @@ export default function PairDetailPanel({ startup, fund, pair, onOpenFund }: Pai
 
   const [openEventId, setOpenEventId] = useState<string | null>(null);
   const [composing, setComposing] = useState(false);
-  const [composeType, setComposeType] = useState<CommEventType>('outreach_sent');
-  const [composeDate, setComposeDate] = useState(nowForInput);
-  const [composeSubject, setComposeSubject] = useState('');
-  const [composeBody, setComposeBody] = useState('');
-
-  function handleLogEmail() {
-    addCommEvent(pair.id, composeType, new Date(composeDate).toISOString(), composeSubject, composeBody);
-    showToast('Email logged');
-    setComposing(false);
-    setComposeSubject('');
-    setComposeBody('');
-    setComposeDate(nowForInput());
-  }
 
   return (
     <div className="pair-detail-panel">
@@ -91,60 +71,7 @@ export default function PairDetailPanel({ startup, fund, pair, onOpenFund }: Pai
         </button>
       </div>
 
-      {composing && (
-        <div className="compose-form">
-          <div className="field-grid">
-            <div className="field">
-              <label htmlFor="compose-type">Type</label>
-              <select
-                id="compose-type"
-                className="select"
-                value={composeType}
-                onChange={(e) => setComposeType(e.target.value as CommEventType)}
-              >
-                <option value="outreach_sent">Outreach sent</option>
-                <option value="reply_received">Reply received</option>
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="compose-date">Date</label>
-              <input
-                id="compose-date"
-                className="input"
-                type="datetime-local"
-                value={composeDate}
-                onChange={(e) => setComposeDate(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="field">
-            <label htmlFor="compose-subject">Subject</label>
-            <input
-              id="compose-subject"
-              className="input"
-              value={composeSubject}
-              onChange={(e) => setComposeSubject(e.target.value)}
-              placeholder="Subject"
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="compose-body">Body</label>
-            <textarea
-              id="compose-body"
-              className="input textarea"
-              value={composeBody}
-              onChange={(e) => setComposeBody(e.target.value)}
-              placeholder="Email body…"
-              rows={3}
-            />
-          </div>
-          <div className="compose-actions">
-            <button type="button" className="btn btn-primary btn-sm" onClick={handleLogEmail} disabled={!composeSubject.trim()}>
-              Save email
-            </button>
-          </div>
-        </div>
-      )}
+      {composing && <EmailComposeForm pairId={pair.id} onLogged={() => setComposing(false)} />}
 
       {inboxEvents.length === 0 ? (
         <EmptyState message="No emails logged yet. Use “+ Log new email” to add one." />

@@ -30,6 +30,7 @@ export const NOT_YET_CONTACTED = 'Not yet contacted';
 
 export const SECTIONS = [
   'Home',
+  'Inbox',
   'Investor library',
   'Startup library',
   'Matchmaking & outreach',
