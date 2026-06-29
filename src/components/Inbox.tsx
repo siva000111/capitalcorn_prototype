@@ -4,7 +4,8 @@ import StartupPicker from './StartupPicker';
 import TaskUpdateForm from './TaskUpdateForm';
 import EmailComposeForm from './EmailComposeForm';
 import EmptyState from './EmptyState';
-import type { CommEvent, Fund, Pair, Startup } from '../types';
+import { showToast } from '../toast';
+import type { CommEvent, Fund, MailAccount, Pair, Startup } from '../types';
 
 type Filter = 'needsAction' | 'all';
 
@@ -62,10 +63,14 @@ function snippet(body: string | undefined): string {
   return body.length > SNIPPET_LENGTH ? body.slice(0, SNIPPET_LENGTH) + '…' : body;
 }
 
-function senderFor(event: CommEvent, fund: Fund): string {
-  if (event.type !== 'reply_received') return 'outreach@capitalcorn.com';
-  const contact = fund.contacts.find((c) => c.name || c.email);
-  return contact?.name || contact?.email || fund.fundName;
+function senderFor(event: CommEvent, fund: Fund, accounts: MailAccount[]): string {
+  if (event.type === 'reply_received') {
+    const contact = fund.contacts.find((c) => c.name || c.email);
+    return contact?.name || contact?.email || fund.fundName;
+  }
+  // outreach_sent → the simulated connected account that sent it
+  const acct = accounts.find((a) => a.id === event.account);
+  return acct?.address ?? 'outreach@capitalcorn.com';
 }
 
 export default function Inbox() {
@@ -73,13 +78,28 @@ export default function Inbox() {
   const pairs = useAppStore((s) => s.pairs);
   const startups = useAppStore((s) => s.startups);
   const funds = useAppStore((s) => s.funds);
+  const mailAccounts = useAppStore((s) => s.mailAccounts);
+  const addMailAccount = useAppStore((s) => s.addMailAccount);
 
   const [filter, setFilter] = useState<Filter>('needsAction');
   const [search, setSearch] = useState('');
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
-  const [loggingNew, setLoggingNew] = useState(false);
+
+  // Account switcher: null = "All accounts".
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+
+  // Simulated "connect an account" placeholder.
+  const [addingAccount, setAddingAccount] = useState(false);
+  const [newAddress, setNewAddress] = useState('');
+
+  // Compose (log a simulated email). Sending account defaults from the switcher.
+  const [composing, setComposing] = useState(false);
+  const [composeAccountId, setComposeAccountId] = useState<string>('');
   const [composeStartupId, setComposeStartupId] = useState<string | null>(null);
   const [composePairId, setComposePairId] = useState<string | null>(null);
+
+  const selectedAccount = mailAccounts.find((a) => a.id === selectedAccountId) ?? null;
 
   const rows = useMemo(() => {
     return events
@@ -91,16 +111,22 @@ export default function Inbox() {
         const fund = funds.find((f) => f.id === pair.fundId);
         if (!startup || !fund) return null;
         const actioned = events.some((n) => n.pairId === pair.id && n.type === 'note' && n.date >= e.date);
-        return { event: e, pair, startup, fund, actioned, sender: senderFor(e, fund) };
+        return { event: e, pair, startup, fund, actioned, sender: senderFor(e, fund, mailAccounts) };
       })
       .filter((r): r is InboxRow => r !== null)
       .sort((a, b) => (a.event.date < b.event.date ? 1 : -1));
-  }, [events, pairs, startups, funds]);
+  }, [events, pairs, startups, funds, mailAccounts]);
 
-  const needsActionCount = useMemo(() => rows.filter((r) => !r.actioned).length, [rows]);
+  // Rows scoped to the selected connected account (or all).
+  const accountRows = useMemo(
+    () => (selectedAccountId ? rows.filter((r) => r.event.account === selectedAccountId) : rows),
+    [rows, selectedAccountId]
+  );
+
+  const needsActionCount = useMemo(() => accountRows.filter((r) => !r.actioned).length, [accountRows]);
 
   const visibleRows = useMemo(() => {
-    let list = filter === 'needsAction' ? rows.filter((r) => !r.actioned) : rows;
+    let list = filter === 'needsAction' ? accountRows.filter((r) => !r.actioned) : accountRows;
     const term = search.trim().toLowerCase();
     if (term) {
       list = list.filter(
@@ -111,12 +137,29 @@ export default function Inbox() {
       );
     }
     return list;
-  }, [rows, filter, search]);
+  }, [accountRows, filter, search]);
 
-  function closeLogNew() {
-    setLoggingNew(false);
+  function openCompose() {
+    setComposing(true);
+    setComposeAccountId(selectedAccountId ?? mailAccounts[0]?.id ?? '');
     setComposeStartupId(null);
     setComposePairId(null);
+  }
+
+  function closeCompose() {
+    setComposing(false);
+    setComposeStartupId(null);
+    setComposePairId(null);
+  }
+
+  function handleAddAccount() {
+    const addr = newAddress.trim();
+    if (!addr) return;
+    const created = addMailAccount(addr);
+    setSelectedAccountId(created.id);
+    setNewAddress('');
+    setAddingAccount(false);
+    showToast('Mail account connected');
   }
 
   const composeStartupPairs = useMemo(
@@ -132,24 +175,143 @@ export default function Inbox() {
           <p className="page-subtitle">Every sent and received email, across every startup–investor pair.</p>
         </div>
         <div className="page-header-actions">
-          <button type="button" className="btn btn-primary" onClick={() => setLoggingNew((v) => !v)}>
-            {loggingNew ? 'Cancel' : '+ Log new email'}
+          {/* Gmail-style account switcher */}
+          <div className="account-switcher">
+            <button
+              type="button"
+              className="account-switcher-trigger"
+              onClick={() => setSwitcherOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={switcherOpen}
+            >
+              <span className="account-switcher-avatar" aria-hidden="true">
+                {(selectedAccount?.label ?? 'A')[0].toUpperCase()}
+              </span>
+              <span className="account-switcher-label">
+                {selectedAccount ? selectedAccount.address : 'All accounts'}
+              </span>
+              <span aria-hidden="true">▾</span>
+            </button>
+            {switcherOpen && (
+              <>
+                <div className="dropdown-backdrop" onClick={() => setSwitcherOpen(false)} />
+                <div className="account-switcher-menu" role="menu">
+                  <button
+                    type="button"
+                    className={`account-switcher-item${selectedAccountId === null ? ' active' : ''}`}
+                    onClick={() => {
+                      setSelectedAccountId(null);
+                      setSwitcherOpen(false);
+                    }}
+                  >
+                    All accounts
+                  </button>
+                  {mailAccounts.map((a) => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      className={`account-switcher-item${selectedAccountId === a.id ? ' active' : ''}`}
+                      onClick={() => {
+                        setSelectedAccountId(a.id);
+                        setSwitcherOpen(false);
+                      }}
+                    >
+                      <span className="account-switcher-avatar" aria-hidden="true">
+                        {a.label[0].toUpperCase()}
+                      </span>
+                      <span className="account-switcher-item-text">
+                        <span className="account-switcher-item-addr">{a.address}</span>
+                        <span className="account-switcher-item-name">{a.label}</span>
+                      </span>
+                    </button>
+                  ))}
+                  <div className="account-switcher-divider" />
+                  <button
+                    type="button"
+                    className="account-switcher-item account-switcher-add"
+                    onClick={() => {
+                      setSwitcherOpen(false);
+                      setAddingAccount(true);
+                    }}
+                  >
+                    + Add new mail
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+          <button type="button" className="btn btn-primary" onClick={() => (composing ? closeCompose() : openCompose())}>
+            {composing ? 'Cancel' : '+ Log email'}
           </button>
         </div>
       </div>
 
-      {loggingNew && (
+      {addingAccount && (
+        <div className="search-backdrop" onMouseDown={(e) => e.target === e.currentTarget && setAddingAccount(false)}>
+          <div className="settings-panel add-account-panel">
+            <div className="settings-header">
+              <h2 className="step-title">Connect a mail account</h2>
+              <button type="button" className="btn btn-sm" onClick={() => setAddingAccount(false)}>
+                Close
+              </button>
+            </div>
+            <p className="add-account-note">
+              Prototype stand-in — this simulates connecting an account. No real Gmail sign-in or OAuth happens; it
+              just adds a mock sending address to the switcher.
+            </p>
+            <div className="field">
+              <label htmlFor="new-account-address">Email address</label>
+              <input
+                id="new-account-address"
+                className="input"
+                placeholder="name@capitalcorn.com"
+                value={newAddress}
+                onChange={(e) => setNewAddress(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddAccount();
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+            <div className="compose-actions">
+              <button type="button" className="btn btn-primary btn-sm" onClick={handleAddAccount} disabled={!newAddress.trim()}>
+                Connect account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {composing && (
         <div className="inbox-log-new">
+          <div className="field">
+            <label htmlFor="compose-from">From account</label>
+            <select
+              id="compose-from"
+              className="select"
+              value={composeAccountId}
+              onChange={(e) => setComposeAccountId(e.target.value)}
+            >
+              {mailAccounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.address}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {!composeStartupId ? (
             <>
-              <h3 className="inbox-log-new-step-title">1. Select a startup</h3>
+              <h3 className="inbox-log-new-step-title">Select a startup</h3>
               <StartupPicker selectedId={composeStartupId} onSelect={setComposeStartupId} />
             </>
           ) : !composePairId ? (
             <>
               <h3 className="inbox-log-new-step-title">
-                2. Select an investor for{' '}
-                {startups.find((s) => s.id === composeStartupId)?.name}
+                Select an investor for {startups.find((s) => s.id === composeStartupId)?.name}
               </h3>
               {composeStartupPairs.length === 0 ? (
                 <EmptyState message="No matched investors for this startup yet. Use the Match tab to find candidates first." />
@@ -159,12 +321,7 @@ export default function Inbox() {
                     const fund = funds.find((f) => f.id === p.fundId);
                     if (!fund) return null;
                     return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        className="startup-pick-row"
-                        onClick={() => setComposePairId(p.id)}
-                      >
+                      <button key={p.id} type="button" className="startup-pick-row" onClick={() => setComposePairId(p.id)}>
                         <span className="startup-pick-name">{fund.fundName}</span>
                         <span className="startup-pick-meta">{fund.city}</span>
                       </button>
@@ -179,10 +336,10 @@ export default function Inbox() {
           ) : (
             <>
               <h3 className="inbox-log-new-step-title">
-                3. Log email — {startups.find((s) => s.id === composeStartupId)?.name} ×{' '}
+                Log email — {startups.find((s) => s.id === composeStartupId)?.name} ×{' '}
                 {funds.find((f) => f.id === pairs.find((p) => p.id === composePairId)?.fundId)?.fundName}
               </h3>
-              <EmailComposeForm pairId={composePairId} onLogged={closeLogNew} />
+              <EmailComposeForm pairId={composePairId} account={composeAccountId} onLogged={closeCompose} />
               <button type="button" className="btn btn-sm" onClick={() => setComposePairId(null)}>
                 ← Back to investors
               </button>
@@ -212,7 +369,7 @@ export default function Inbox() {
             className={`inbox-filter-btn${filter === 'all' ? ' active' : ''}`}
             onClick={() => setFilter('all')}
           >
-            All ({rows.length})
+            All ({accountRows.length})
           </button>
         </div>
       </div>
@@ -222,7 +379,7 @@ export default function Inbox() {
           message={
             filter === 'needsAction'
               ? 'Nothing needs action right now.'
-              : 'No emails logged yet. Use “+ Log new email” to add one.'
+              : 'No emails logged yet. Use “+ Log email” to add one.'
           }
         />
       ) : (

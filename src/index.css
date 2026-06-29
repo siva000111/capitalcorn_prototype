@@ -1669,6 +1669,134 @@ table.data-table {
   margin-top: var(--sp-3);
 }
 
+/* ---------- Inbox account switcher ---------- */
+
+.account-switcher {
+  position: relative;
+}
+
+.account-switcher-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: var(--fs-body);
+  max-width: 260px;
+}
+
+.account-switcher-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-switcher-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.account-switcher-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 51;
+  min-width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  padding: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.account-switcher-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: var(--sp-2) var(--sp-3);
+  cursor: pointer;
+  font-size: var(--fs-body);
+  color: var(--text-primary);
+}
+
+.account-switcher-item:hover {
+  background: #f1f5f9;
+}
+
+.account-switcher-item.active {
+  background: #eef2ff;
+  font-weight: 600;
+}
+
+.account-switcher-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.account-switcher-item-addr {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-switcher-item-name {
+  font-size: var(--fs-micro);
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.account-switcher-divider {
+  height: 1px;
+  background: var(--border);
+  margin: var(--sp-1) 0;
+}
+
+.account-switcher-add {
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.add-account-panel {
+  max-width: 440px;
+}
+
+.add-account-note {
+  font-size: var(--fs-micro);
+  color: var(--text-secondary);
+  background: var(--positive-bg);
+  color: var(--positive-text);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: 6px;
+  margin: 0 0 var(--sp-4);
+}
+
 /* ---------- Inbox (central) ---------- */
 
 .inbox-toolbar {

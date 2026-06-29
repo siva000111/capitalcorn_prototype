@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AppData, Fund, Startup, Pair, StatusDef, StatusColor, CommEvent, CommEventType } from './types';
+import type { AppData, Fund, Startup, Pair, StatusDef, StatusColor, CommEvent, CommEventType, MailAccount } from './types';
 import { seed } from './seed';
 
 const COLOR_CYCLE: StatusColor[] = ['slate', 'blue', 'indigo', 'violet', 'amber', 'emerald', 'rose'];
@@ -74,7 +74,8 @@ interface AppStore extends AppData {
   deleteStatus: (id: string) => void;
   reorderStatuses: (orderedIds: string[]) => void;
   countPairsUsingStatus: (statusId: string) => number;
-  addCommEvent: (pairId: string, type: CommEventType, date: string, subject?: string, body?: string) => void;
+  addCommEvent: (pairId: string, type: CommEventType, date: string, subject?: string, body?: string, account?: string) => void;
+  addMailAccount: (address: string) => MailAccount;
   getEventsForPair: (pairId: string) => CommEvent[];
   countReplies: (pairId: string, sinceDate?: string) => number;
   countMeetingsScheduled: (pairId: string, sinceDate?: string) => number;
@@ -155,10 +156,19 @@ export const useAppStore = create<AppStore>()(
           }),
         })),
       countPairsUsingStatus: (statusId) => get().pairs.filter((p) => p.status === statusId).length,
-      addCommEvent: (pairId, type, date, subject, body) =>
+      addCommEvent: (pairId, type, date, subject, body, account) =>
         set((state) => ({
-          events: [...state.events, { id: nextId('event', state.events), pairId, type, date, subject, body }],
+          events: [...state.events, { id: nextId('event', state.events), pairId, type, date, subject, body, account }],
         })),
+      addMailAccount: (address) => {
+        const account: MailAccount = {
+          id: nextId('mail', get().mailAccounts),
+          address: address.trim(),
+          label: address.trim().split('@')[0],
+        };
+        set((state) => ({ mailAccounts: [...state.mailAccounts, account] }));
+        return account;
+      },
       getEventsForPair: (pairId) => get().events.filter((e) => e.pairId === pairId),
       countReplies: (pairId, sinceDate) =>
         get().events.filter(
@@ -181,6 +191,7 @@ export const useAppStore = create<AppStore>()(
         pairs: state.pairs,
         statuses: state.statuses,
         events: state.events,
+        mailAccounts: state.mailAccounts,
       }),
     }
   )

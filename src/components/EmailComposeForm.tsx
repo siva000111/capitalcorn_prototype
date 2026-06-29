@@ -5,6 +5,7 @@ import type { CommEventType } from '../types';
 
 interface EmailComposeFormProps {
   pairId: string;
+  account?: string;
   onLogged?: () => void;
 }
 
@@ -14,7 +15,7 @@ function nowForInput(): string {
   return d.toISOString().slice(0, 16);
 }
 
-export default function EmailComposeForm({ pairId, onLogged }: EmailComposeFormProps) {
+export default function EmailComposeForm({ pairId, account, onLogged }: EmailComposeFormProps) {
   const addCommEvent = useAppStore((s) => s.addCommEvent);
 
   const [type, setType] = useState<CommEventType>('outreach_sent');
@@ -23,7 +24,7 @@ export default function EmailComposeForm({ pairId, onLogged }: EmailComposeFormP
   const [body, setBody] = useState('');
 
   function handleSave() {
-    addCommEvent(pairId, type, new Date(date).toISOString(), subject, body);
+    addCommEvent(pairId, type, new Date(date).toISOString(), subject, body, account);
     showToast('Email logged');
     setSubject('');
     setBody('');

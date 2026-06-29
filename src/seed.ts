@@ -1,4 +1,4 @@
-import type { AppData, Contact, Fund, Startup, Pair, StatusDef, CommEvent } from './types';
+import type { AppData, Contact, Fund, Startup, Pair, StatusDef, CommEvent, CommEventType, MailAccount } from './types';
 
 const c = (name: string, email: string): Contact => ({ name, email });
 
@@ -147,7 +147,7 @@ const funds: Fund[] = [
     minTicket: 2,
     maxTicket: null,
     stages: ['Series A', 'Series B', 'Series C+'],
-    locations: [],
+    locations: ['US', 'India', 'Global'],
     priority: 'Low',
     investorType: 'Family Office',
     contacts: [
@@ -283,6 +283,80 @@ const funds: Fund[] = [
       c('Jacob Turner', 'jacob.turner@vantageholdings.ca'),
     ],
   },
+  {
+    id: 'fund-15',
+    fundName: 'Helios Green Capital',
+    city: 'Amsterdam',
+    focusAreas: ['Climate & Energy', 'Mobility & Logistics'],
+    minTicket: 4,
+    maxTicket: 20,
+    stages: ['Series A', 'Series B'],
+    locations: ['Europe', 'Global'],
+    priority: 'High',
+    investorType: 'VC',
+    contacts: [
+      c('Sven Eriksson', 'sven.eriksson@heliosgreen.eu'),
+      c('Marta Novak', 'marta.novak@heliosgreen.eu'),
+      c('Pieter de Vries', 'pieter.devries@heliosgreen.eu'),
+      c('Isabella Romano', 'isabella.romano@heliosgreen.eu'),
+      c('Henrik Sorensen', 'henrik.sorensen@heliosgreen.eu'),
+    ],
+  },
+  {
+    id: 'fund-16',
+    fundName: 'Sutlej Fintech Fund',
+    city: 'Gurugram',
+    focusAreas: ['Fintech', 'SaaS & Enterprise'],
+    minTicket: 1,
+    maxTicket: 6,
+    stages: ['Seed', 'Series A'],
+    locations: ['India', 'Global'],
+    priority: 'Medium',
+    investorType: 'VC',
+    contacts: [
+      c('Harpreet Gill', 'harpreet.gill@sutlejfintech.in'),
+      c('Ananya Roy', 'ananya.roy@sutlejfintech.in'),
+      c('Manish Agarwal', 'manish.agarwal@sutlejfintech.in'),
+      c('Devika Nair', 'devika.nair@sutlejfintech.in'),
+    ],
+  },
+  {
+    id: 'fund-17',
+    fundName: 'Harvest Consumer Fund',
+    city: 'Austin',
+    focusAreas: ['Food & FMCG', 'Consumer & D2C'],
+    minTicket: 1,
+    maxTicket: 6,
+    stages: ['Seed', 'Series A'],
+    locations: ['US', 'India'],
+    priority: 'Medium',
+    investorType: 'VC',
+    contacts: [
+      c('Rebecca Stone', 'rebecca.stone@harvestcvc.com'),
+      c('Daniel Ortiz', 'daniel.ortiz@harvestcvc.com'),
+      c('Priya Menon', 'priya.menon@harvestcvc.com'),
+      c('Kyle Bennett', 'kyle.bennett@harvestcvc.com'),
+    ],
+  },
+  {
+    id: 'fund-18',
+    fundName: 'Meridian Growth Partners',
+    city: 'New York',
+    focusAreas: ['Sector Agnostic'],
+    minTicket: null,
+    maxTicket: null,
+    stages: ['Seed', 'Series A', 'Series B', 'Series C+'],
+    locations: ['US', 'Europe', 'Global', 'India'],
+    priority: 'High',
+    investorType: 'VC',
+    contacts: [
+      c('Eleanor Hayes', 'eleanor.hayes@meridiangrowth.com'),
+      c('Marcus Bell', 'marcus.bell@meridiangrowth.com'),
+      c('Sophia Lambert', 'sophia.lambert@meridiangrowth.com'),
+      c('Daniel Frost', 'daniel.frost@meridiangrowth.com'),
+      c('Aisha Rahman', 'aisha.rahman@meridiangrowth.com'),
+    ],
+  },
 ];
 
 const startups: Startup[] = [
@@ -326,6 +400,55 @@ const startups: Startup[] = [
     raise: 1.2,
     location: 'SEA',
   },
+  {
+    id: 'startup-06',
+    name: 'LedgerWise',
+    sector: 'SaaS & Enterprise',
+    stage: 'Seed',
+    raise: 5,
+    location: 'India',
+  },
+  {
+    id: 'startup-07',
+    name: 'PlatePal',
+    sector: 'Food & FMCG',
+    stage: 'Seed',
+    raise: 2,
+    location: 'US',
+  },
+  {
+    id: 'startup-08',
+    name: 'NeuraCore',
+    sector: 'AI & Deep Tech',
+    stage: 'Series A',
+    raise: 12,
+    location: 'Europe',
+  },
+  {
+    id: 'startup-09',
+    name: 'UrbanNest',
+    sector: 'Real Estate & Construction',
+    stage: 'Series B',
+    raise: 5,
+    location: 'Global',
+  },
+  {
+    id: 'startup-10',
+    name: 'StreamForge',
+    sector: 'Media/Gaming/Creator',
+    stage: 'Series C+',
+    raise: 5,
+    location: 'US',
+  },
+  // Intentionally fresh — no pairs/events — to keep the empty-state demonstrable.
+  {
+    id: 'startup-11',
+    name: 'Foundry Nine',
+    sector: 'Sector Agnostic',
+    stage: 'Seed',
+    raise: 1,
+    location: 'India',
+  },
 ];
 
 const statuses: StatusDef[] = [
@@ -341,106 +464,179 @@ const statuses: StatusDef[] = [
   { id: 'status-10', label: 'Not a pass – re-evaluate later', order: 10, closed: false, color: 'amber' },
 ];
 
-const pairs: Pair[] = [
-  {
-    id: 'pair-01',
-    startupId: 'startup-01',
-    fundId: 'fund-01',
-    status: 'status-02', // Interested to meet
-    description: 'Intro call scheduled after a warm referral from a portfolio founder.',
-    mailLink: 'https://mail.google.com/mail/u/0/#inbox/placeholder-pair-01',
-    followUpDate: '2026-07-02',
-    matchedAt: '2026-06-10T09:15:00.000Z',
-  },
-  {
-    id: 'pair-02',
-    startupId: 'startup-01',
-    fundId: 'fund-07',
-    status: 'status-07', // Pass
-    description: 'Fund passed, citing stage mismatch with their current fund cycle.',
-    mailLink: 'https://mail.google.com/mail/u/0/#inbox/placeholder-pair-02',
-    followUpDate: null,
-    matchedAt: '2026-06-12T11:30:00.000Z',
-  },
-  {
-    id: 'pair-03',
-    startupId: 'startup-01',
-    fundId: 'fund-13',
-    status: 'status-03', // Meeting done
-    description: 'First meeting completed; fund requested an updated financial model.',
-    mailLink: 'https://mail.google.com/mail/u/0/#inbox/placeholder-pair-03',
-    followUpDate: '2026-07-15',
-    matchedAt: '2026-06-14T14:00:00.000Z',
-  },
+// Simulated connected mail accounts (mock only — no real Gmail/OAuth anywhere).
+const A1 = 'mail-01';
+const A2 = 'mail-02';
+const A3 = 'mail-03';
+
+const mailAccounts: MailAccount[] = [
+  { id: A1, address: 'arjun@capitalcorn.com', label: 'Arjun' },
+  { id: A2, address: 'priya@capitalcorn.com', label: 'Priya' },
+  { id: A3, address: 'deals@capitalcorn.com', label: 'Deals desk' },
 ];
+
+// Today (for this seed) is 2026-06-29; follow-ups and event dates are spread around it.
+const pair = (
+  id: string,
+  startupId: string,
+  fundId: string,
+  status: string,
+  description: string,
+  followUpDate: string | null,
+  matchedAt: string
+): Pair => ({
+  id,
+  startupId,
+  fundId,
+  status,
+  description,
+  mailLink: `https://mail.google.com/mail/u/0/#inbox/placeholder-${id}`,
+  followUpDate,
+  matchedAt,
+});
+
+const pairs: Pair[] = [
+  // TallyForge (startup-01)
+  pair('pair-01', 'startup-01', 'fund-01', 'status-02', 'Warm intro via a portfolio founder; they want to meet.', '2026-06-29', '2026-06-10T09:15:00.000Z'),
+  pair('pair-02', 'startup-01', 'fund-07', 'status-07', 'Passed — outside their current stage focus.', null, '2026-06-12T11:30:00.000Z'),
+  pair('pair-03', 'startup-01', 'fund-13', 'status-03', 'First meeting done; awaiting updated financial model.', '2026-07-02', '2026-06-14T14:00:00.000Z'),
+  // NimbusAI (startup-02)
+  pair('pair-04', 'startup-02', 'fund-02', 'status-05', 'In diligence; DD checklist circulating.', '2026-06-29', '2026-06-08T08:00:00.000Z'),
+  pair('pair-05', 'startup-02', 'fund-18', 'status-01', 'Reached out; first reply received, needs a response.', '2026-06-26', '2026-06-20T10:00:00.000Z'),
+  // KadamWear (startup-03)
+  pair('pair-06', 'startup-03', 'fund-03', 'status-01', 'Reached out; angel replied with early interest.', '2026-07-01', '2026-06-22T09:00:00.000Z'),
+  // GreenVolt (startup-04)
+  pair('pair-07', 'startup-04', 'fund-04', 'status-04', 'Strong first meeting; they want a second call.', '2026-06-30', '2026-05-28T09:00:00.000Z'),
+  pair('pair-08', 'startup-04', 'fund-15', 'status-06', 'Term sheet signed — investment closed.', null, '2026-05-20T09:00:00.000Z'),
+  // SkillBridge (startup-05)
+  pair('pair-09', 'startup-05', 'fund-05', 'status-02', 'Replied with interest in meeting.', '2026-06-29', '2026-06-23T09:00:00.000Z'),
+  // LedgerWise (startup-06)
+  pair('pair-10', 'startup-06', 'fund-09', 'status-03', 'Met the partner; positive, follow-up scheduled.', '2026-07-03', '2026-06-15T09:00:00.000Z'),
+  pair('pair-11', 'startup-06', 'fund-16', 'status-10', 'Not now — revisit next quarter.', '2026-06-24', '2026-06-16T09:00:00.000Z'),
+  // PlatePal (startup-07)
+  pair('pair-12', 'startup-07', 'fund-11', 'status-01', 'Intro sent; awaiting first reply.', '2026-06-29', '2026-06-25T09:00:00.000Z'),
+  pair('pair-13', 'startup-07', 'fund-17', 'status-08', 'Passed after the first meeting.', null, '2026-06-05T09:00:00.000Z'),
+  // NeuraCore (startup-08)
+  pair('pair-14', 'startup-08', 'fund-12', 'status-05', 'Deep diligence underway; DD questions just in.', '2026-07-04', '2026-06-10T09:00:00.000Z'),
+  // UrbanNest (startup-09)
+  pair('pair-15', 'startup-09', 'fund-10', 'status-02', 'Interested to meet; replied to intro.', '2026-07-05', '2026-06-24T09:00:00.000Z'),
+  pair('pair-16', 'startup-09', 'fund-08', 'status-01', 'Reached out; awaiting first reply.', '2026-06-22', '2026-06-18T09:00:00.000Z'),
+  // StreamForge (startup-10)
+  pair('pair-17', 'startup-10', 'fund-14', 'status-09', 'Passed after the second meeting.', null, '2026-05-25T09:00:00.000Z'),
+];
+
+let _e = 0;
+const E = (
+  pairId: string,
+  type: CommEventType,
+  date: string,
+  account: string,
+  subject?: string,
+  body?: string
+): CommEvent => ({ id: `event-${String(++_e).padStart(2, '0')}`, pairId, type, date, subject, body, account });
 
 const events: CommEvent[] = [
-  // pair-01 — Interested to meet
-  {
-    id: 'event-01',
-    pairId: 'pair-01',
-    date: '2026-06-10T10:00:00.000Z',
-    type: 'outreach_sent',
-    subject: 'Introduction: TallyForge x Northstar Capital',
-    body: 'Sent a warm intro email with the deck attached.',
-  },
-  {
-    id: 'event-02',
-    pairId: 'pair-01',
-    date: '2026-06-11T09:30:00.000Z',
-    type: 'reply_received',
-    subject: 'Re: Introduction: TallyForge x Northstar Capital',
-    body: "Thanks for reaching out — would love to learn more, can we set up a call next week?",
-  },
-  // pair-02 — Pass
-  {
-    id: 'event-03',
-    pairId: 'pair-02',
-    date: '2026-06-12T12:00:00.000Z',
-    type: 'outreach_sent',
-    subject: 'Introduction: TallyForge x Crosswind Capital',
-    body: 'Sent intro email with the deck attached.',
-  },
-  {
-    id: 'event-04',
-    pairId: 'pair-02',
-    date: '2026-06-13T08:00:00.000Z',
-    type: 'reply_received',
-    subject: 'Re: Introduction: TallyForge x Crosswind Capital',
-    body: 'Appreciate you thinking of us, but this is outside our current stage focus. Wishing you the best.',
-  },
-  // pair-03 — Meeting done
-  {
-    id: 'event-05',
-    pairId: 'pair-03',
-    date: '2026-06-14T14:30:00.000Z',
-    type: 'outreach_sent',
-    subject: 'Introduction: TallyForge x Coral Reef Capital',
-    body: 'Sent intro email with the deck attached.',
-  },
-  {
-    id: 'event-06',
-    pairId: 'pair-03',
-    date: '2026-06-15T10:00:00.000Z',
-    type: 'reply_received',
-    subject: 'Re: Introduction: TallyForge x Coral Reef Capital',
-    body: "Interesting — let's set up time to chat.",
-  },
-  {
-    id: 'event-07',
-    pairId: 'pair-03',
-    date: '2026-06-16T09:00:00.000Z',
-    type: 'meeting_scheduled',
-    subject: 'Call scheduled for Jun 18',
-  },
-  {
-    id: 'event-08',
-    pairId: 'pair-03',
-    date: '2026-06-18T15:00:00.000Z',
-    type: 'meeting_completed',
-    subject: 'First call completed',
-    body: 'Good first conversation; they requested an updated financial model.',
-  },
+  // pair-01 — TallyForge × Northstar — reply with no later note → NEEDS ACTION
+  E('pair-01', 'outreach_sent', '2026-06-10T10:00:00.000Z', A1, 'Introduction: TallyForge x Northstar Capital', 'Sent a warm intro email with the deck attached.'),
+  E('pair-01', 'reply_received', '2026-06-11T09:30:00.000Z', A1, 'Re: Introduction: TallyForge x Northstar Capital', 'Thanks for reaching out — would love to learn more, can we set up a call next week?'),
+
+  // pair-02 — TallyForge × Crosswind — passed → actioned
+  E('pair-02', 'outreach_sent', '2026-06-12T12:00:00.000Z', A2, 'Introduction: TallyForge x Crosswind Capital', 'Sent intro email with the deck attached.'),
+  E('pair-02', 'reply_received', '2026-06-13T08:00:00.000Z', A2, 'Re: Introduction: TallyForge x Crosswind Capital', 'Appreciate you thinking of us, but this is outside our current stage focus. Wishing you the best.'),
+  E('pair-02', 'note', '2026-06-13T10:00:00.000Z', A2, 'Logged pass', 'Marked as a pass — stage mismatch.'),
+
+  // pair-03 — TallyForge × Coral Reef — full meeting cycle → actioned
+  E('pair-03', 'outreach_sent', '2026-06-14T14:30:00.000Z', A3, 'Introduction: TallyForge x Coral Reef Capital', 'Sent intro email with the deck attached.'),
+  E('pair-03', 'reply_received', '2026-06-15T10:00:00.000Z', A3, 'Re: Introduction: TallyForge x Coral Reef Capital', "Interesting — let's set up time to chat."),
+  E('pair-03', 'meeting_scheduled', '2026-06-16T09:00:00.000Z', A3, 'Call scheduled for Jun 18'),
+  E('pair-03', 'meeting_completed', '2026-06-18T15:00:00.000Z', A3, 'First call completed', 'Good first conversation; they requested an updated financial model.'),
+  E('pair-03', 'note', '2026-06-18T16:00:00.000Z', A3, 'Task updated', 'Send updated model by early July.'),
+
+  // pair-04 — NimbusAI × Helix — diligence; fresh reply today → NEEDS ACTION
+  E('pair-04', 'outreach_sent', '2026-06-08T10:00:00.000Z', A1, 'Introduction: NimbusAI x Helix Ventures', 'Sent intro with deck and traction summary.'),
+  E('pair-04', 'reply_received', '2026-06-09T11:00:00.000Z', A1, 'Re: Introduction: NimbusAI x Helix Ventures', 'Impressive numbers — let us set up an intro call.'),
+  E('pair-04', 'meeting_scheduled', '2026-06-12T09:00:00.000Z', A1, 'Intro call scheduled'),
+  E('pair-04', 'meeting_completed', '2026-06-24T15:00:00.000Z', A1, 'Intro call completed', 'Strong call; moving into diligence.'),
+  E('pair-04', 'note', '2026-06-24T16:00:00.000Z', A1, 'Task updated', 'Entered due diligence.'),
+  E('pair-04', 'reply_received', '2026-06-29T09:00:00.000Z', A1, 'DD checklist', 'Sending over our diligence checklist — can you share the data room?'),
+  E('pair-04', 'meeting_scheduled', '2026-07-01T09:00:00.000Z', A1, 'DD deep-dive call scheduled'),
+  E('pair-04', 'meeting_completed', '2026-07-02T15:00:00.000Z', A1, 'DD deep-dive completed', 'Worked through the model line by line.'),
+
+  // pair-05 — NimbusAI × Meridian — reply, no note → NEEDS ACTION
+  E('pair-05', 'outreach_sent', '2026-06-20T10:00:00.000Z', A2, 'Introduction: NimbusAI x Meridian Growth Partners', 'Sent intro and deck.'),
+  E('pair-05', 'reply_received', '2026-06-27T11:00:00.000Z', A2, 'Re: Introduction: NimbusAI x Meridian Growth Partners', 'Thanks — a few questions on your go-to-market before we meet.'),
+
+  // pair-06 — KadamWear × Bloom — reply, no note → NEEDS ACTION
+  E('pair-06', 'outreach_sent', '2026-06-22T10:00:00.000Z', A3, 'Introduction: KadamWear x Bloom & Co Angels', 'Sent intro and lookbook.'),
+  E('pair-06', 'reply_received', '2026-06-25T11:00:00.000Z', A3, 'Re: Introduction: KadamWear x Bloom & Co Angels', 'Love the brand — can you share unit economics?'),
+
+  // pair-07 — GreenVolt × Terra — re-engaged after note → NEEDS ACTION
+  E('pair-07', 'outreach_sent', '2026-05-28T10:00:00.000Z', A1, 'Introduction: GreenVolt x Terra Climate Partners', 'Sent intro and deck.'),
+  E('pair-07', 'reply_received', '2026-05-30T11:00:00.000Z', A1, 'Re: Introduction: GreenVolt x Terra Climate Partners', 'This fits our thesis — let us schedule a call.'),
+  E('pair-07', 'meeting_scheduled', '2026-06-03T09:00:00.000Z', A1, 'First call scheduled'),
+  E('pair-07', 'meeting_completed', '2026-06-09T15:00:00.000Z', A1, 'First call completed', 'Great fit on climate thesis.'),
+  E('pair-07', 'note', '2026-06-09T16:00:00.000Z', A1, 'Task updated', 'Awaiting their internal discussion.'),
+  E('pair-07', 'reply_received', '2026-06-26T11:00:00.000Z', A1, 'Ready for a second call', 'We discussed internally — ready to set up a second call.'),
+
+  // pair-08 — GreenVolt × Helios — investment closed → actioned
+  E('pair-08', 'outreach_sent', '2026-05-20T10:00:00.000Z', A2, 'Introduction: GreenVolt x Helios Green Capital', 'Sent intro and deck.'),
+  E('pair-08', 'reply_received', '2026-05-22T11:00:00.000Z', A2, 'Re: Introduction: GreenVolt x Helios Green Capital', 'Very interested — let us move quickly.'),
+  E('pair-08', 'meeting_scheduled', '2026-05-27T09:00:00.000Z', A2, 'Partner meeting scheduled'),
+  E('pair-08', 'meeting_completed', '2026-06-02T15:00:00.000Z', A2, 'Partner meeting completed', 'Unanimous interest from the partnership.'),
+  E('pair-08', 'note', '2026-06-02T16:00:00.000Z', A2, 'Task updated', 'Negotiating term sheet.'),
+  E('pair-08', 'note', '2026-06-20T16:00:00.000Z', A2, 'Term sheet signed', 'Investment closed — lead round.'),
+
+  // pair-09 — SkillBridge × Skilling Frontier — reply, no note → NEEDS ACTION
+  E('pair-09', 'outreach_sent', '2026-06-23T10:00:00.000Z', A3, 'Introduction: SkillBridge x Skilling Frontier Fund', 'Sent intro and deck.'),
+  E('pair-09', 'reply_received', '2026-06-28T11:00:00.000Z', A3, 'Re: Introduction: SkillBridge x Skilling Frontier Fund', 'Keen to meet — what does next week look like?'),
+  E('pair-09', 'meeting_scheduled', '2026-06-30T09:00:00.000Z', A3, 'Intro call scheduled'),
+
+  // pair-10 — LedgerWise × Lighthouse — meeting done → actioned
+  E('pair-10', 'outreach_sent', '2026-06-15T10:00:00.000Z', A1, 'Introduction: LedgerWise x Lighthouse SaaS Fund', 'Sent intro and deck.'),
+  E('pair-10', 'reply_received', '2026-06-17T11:00:00.000Z', A1, 'Re: Introduction: LedgerWise x Lighthouse SaaS Fund', 'Looks compelling — let us meet.'),
+  E('pair-10', 'meeting_scheduled', '2026-06-20T09:00:00.000Z', A1, 'Call scheduled'),
+  E('pair-10', 'meeting_completed', '2026-06-26T15:00:00.000Z', A1, 'Call completed', 'Positive; they want a follow-up with the wider team.'),
+  E('pair-10', 'note', '2026-06-26T16:00:00.000Z', A1, 'Task updated', 'Schedule team follow-up.'),
+
+  // pair-11 — LedgerWise × Sutlej — re-evaluate later → actioned
+  E('pair-11', 'outreach_sent', '2026-06-16T10:00:00.000Z', A2, 'Introduction: LedgerWise x Sutlej Fintech Fund', 'Sent intro and deck.'),
+  E('pair-11', 'reply_received', '2026-06-19T11:00:00.000Z', A2, 'Re: Introduction: LedgerWise x Sutlej Fintech Fund', 'Not the right time, but please revisit us next quarter.'),
+  E('pair-11', 'note', '2026-06-19T12:00:00.000Z', A2, 'Task updated', 'Re-evaluate in Q4.'),
+
+  // pair-12 — PlatePal × FreshTable — outreach only, awaiting reply
+  E('pair-12', 'outreach_sent', '2026-06-25T10:00:00.000Z', A3, 'Introduction: PlatePal x FreshTable Ventures', 'Sent intro and deck.'),
+
+  // pair-13 — PlatePal × Harvest — passed after meeting → actioned
+  E('pair-13', 'outreach_sent', '2026-06-05T10:00:00.000Z', A1, 'Introduction: PlatePal x Harvest Consumer Fund', 'Sent intro and deck.'),
+  E('pair-13', 'reply_received', '2026-06-07T11:00:00.000Z', A1, 'Re: Introduction: PlatePal x Harvest Consumer Fund', 'Happy to take a first meeting.'),
+  E('pair-13', 'meeting_scheduled', '2026-06-11T09:00:00.000Z', A1, 'First meeting scheduled'),
+  E('pair-13', 'meeting_completed', '2026-06-16T15:00:00.000Z', A1, 'First meeting completed', 'Good discussion but margins were a concern.'),
+  E('pair-13', 'note', '2026-06-16T16:00:00.000Z', A1, 'Logged pass', 'Passed after meeting — margin concerns.'),
+
+  // pair-14 — NeuraCore × Quantum — DD; fresh reply today → NEEDS ACTION
+  E('pair-14', 'outreach_sent', '2026-06-10T10:00:00.000Z', A2, 'Introduction: NeuraCore x Quantum Edge Capital', 'Sent intro and deck.'),
+  E('pair-14', 'reply_received', '2026-06-12T11:00:00.000Z', A2, 'Re: Introduction: NeuraCore x Quantum Edge Capital', 'Strong team — let us set up a technical deep-dive.'),
+  E('pair-14', 'meeting_scheduled', '2026-06-17T09:00:00.000Z', A2, 'Technical deep-dive scheduled'),
+  E('pair-14', 'meeting_completed', '2026-06-23T15:00:00.000Z', A2, 'Technical deep-dive completed', 'Impressed with the architecture.'),
+  E('pair-14', 'note', '2026-06-23T16:00:00.000Z', A2, 'Task updated', 'Moving into diligence.'),
+  E('pair-14', 'reply_received', '2026-06-29T10:00:00.000Z', A2, 'DD questions attached', 'Attaching our diligence questions — keen to keep momentum.'),
+
+  // pair-15 — UrbanNest × Riverside — reply, no note → NEEDS ACTION
+  E('pair-15', 'outreach_sent', '2026-06-24T10:00:00.000Z', A3, 'Introduction: UrbanNest x Riverside Real Assets', 'Sent intro and deck.'),
+  E('pair-15', 'reply_received', '2026-06-27T11:00:00.000Z', A3, 'Re: Introduction: UrbanNest x Riverside Real Assets', 'Interesting space — happy to meet.'),
+
+  // pair-16 — UrbanNest × Pinnacle — outreach only, awaiting reply
+  E('pair-16', 'outreach_sent', '2026-06-18T10:00:00.000Z', A1, 'Introduction: UrbanNest x Pinnacle Family Office', 'Sent intro and deck.'),
+
+  // pair-17 — StreamForge × Vantage — two meeting cycles, passed → actioned
+  E('pair-17', 'outreach_sent', '2026-05-25T10:00:00.000Z', A2, 'Introduction: StreamForge x Vantage Holdings', 'Sent intro and deck.'),
+  E('pair-17', 'reply_received', '2026-05-27T11:00:00.000Z', A2, 'Re: Introduction: StreamForge x Vantage Holdings', 'Let us take a first meeting.'),
+  E('pair-17', 'meeting_scheduled', '2026-06-01T09:00:00.000Z', A2, 'First meeting scheduled'),
+  E('pair-17', 'meeting_completed', '2026-06-06T15:00:00.000Z', A2, 'First meeting completed', 'Good first meeting; they wanted a second.'),
+  E('pair-17', 'note', '2026-06-06T16:00:00.000Z', A2, 'Task updated', 'Second meeting requested.'),
+  E('pair-17', 'meeting_scheduled', '2026-06-10T09:00:00.000Z', A2, 'Second meeting scheduled'),
+  E('pair-17', 'meeting_completed', '2026-06-15T15:00:00.000Z', A2, 'Second meeting completed', 'Decided not to proceed.'),
+  E('pair-17', 'note', '2026-06-15T16:00:00.000Z', A2, 'Logged pass', 'Passed after second meeting.'),
 ];
 
-export const seed: AppData = { funds, startups, pairs, statuses, events };
+export const seed: AppData = { funds, startups, pairs, statuses, events, mailAccounts };

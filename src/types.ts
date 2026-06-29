@@ -28,6 +28,14 @@ export interface CommEvent {
   type: CommEventType;
   subject?: string;
   body?: string;
+  account?: string;        // MailAccount.id of the simulated sending identity (outreach/reply threads)
+}
+
+// A SIMULATED connected mail account — mock only, no real Gmail/OAuth.
+export interface MailAccount {
+  id: string;
+  address: string;
+  label: string;
 }
 
 // position 0 => "Email 1 / Name 1", position 1 => "Email 2 / Name 2", etc. (up to 10)
@@ -73,4 +81,5 @@ export interface AppData {
   pairs: Pair[];
   statuses: StatusDef[];
   events: CommEvent[];
+  mailAccounts: MailAccount[];
 }
